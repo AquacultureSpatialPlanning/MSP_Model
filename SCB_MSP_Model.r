@@ -74,7 +74,8 @@ M.V_n_i_p <- M$Annuity[Aqua.Full.Domain.Logical]
 F.V_n_i_p <- F$Annuity[Aqua.Full.Domain.Logical]
 K.V_n_i_p <- K$Annuity[Aqua.Full.Domain.Logical]
 
-# Run Halibut fishing model using matlab 
+# Run Halibut fishing model using matlab
+
 
 # Insert the directory in which the model folder is located
 model_directory <- '~/Desktop/Aquaculture_MSP_Model/'
