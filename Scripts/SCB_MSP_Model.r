@@ -6,7 +6,6 @@ wkdir <- getwd()
 # current workspace.
 source(paste0(wkdir,'/MSP_Model/Scripts','/R_Libraries.r'))
 R_Libraries(F) # After the first initial run this can be set to F
-system2('/Applications/MATLAB_R2016b.app/bin/matlab', args = c('-nodesktop','-noFigureWindows','-nodisplay','try eigenvector(); catch; end; quit'))
 # Set global variables
 n.sector <- 7 # Number of sectors
 epsilon <- 0.2 # Stepsize of sector weights
@@ -75,7 +74,6 @@ if(readline("Run halibut model or load results Y/N? ") == 'Y'){
   system2('/Applications/MATLAB_R2016b.app/bin/matlab',
     args = c('-nodesktop','-noFigureWindows','-nosplash','-r',
     "run\\(\\'~/MSP_Model/Scripts/Halibut/Tuner_free_params_v4.m\\'\\)"))
-  system2()
   # run_matlab_script(paste0(wkdir,'/MSP_Model/Scripts/Halibut/Tuner_free_params_v4.m'))
 }
 H <- read_excel(paste0(wkdir,'/MSP_Model/Output/Target_FID_and_Yi_fulldomain_NPV_at_MSY_noAqua.xlsx'))
