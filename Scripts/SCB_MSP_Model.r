@@ -1,26 +1,18 @@
-# Disclaimer
-## Need to do
-  # Edit halibut controls
-  # Remove the "dummy" variable files in the halibut model
-  # Check why readxl is not installing correctly
-  # Edit description for profitable vectors
-  # Double check that the viewshed, benthic, disease is loading accurately
-  # Make a disease script in matlab or create one using R
-  # NOTE: MATLAB requires 'Mapping Toolbox', 'Bioinformatics', 'Parallel Optimization'
+# NOTE: MATLAB requires 'Mapping Toolbox', 'Bioinformatics', 'Parallel Optimization'
 # Set current working directory as a string
 wkdir <- getwd()
-# Load necessary R libraries. For the function R_Libraries,
-# enter T if this is the first time running the model. This will
+# Load necessary R libraries. For the function R_Libraries, enter T if this is the first time running the model. This will
 # install all of the necessary libraries and load them into the
 # current workspace.
 source(paste0(wkdir,'/MSP_Model/Scripts','/R_Libraries.r'))
 R_Libraries(F) # After the first initial run this can be set to F
+system2('/Applications/MATLAB_R2016b.app/bin/matlab', args = c('-nodesktop','-noFigureWindows','-nodisplay','try eigenvector(); catch; end; quit'))
 # Set global variables
 n.sector <- 7 # Number of sectors
 epsilon <- 0.2 # Stepsize of sector weights
 t <- 10 # Time Horizon
 r <- 0.05 # Discount rate
-
+paste0(
 # Read sector data
 sector_data.df <- read.csv(paste0(wkdir,'/MSP_Model/Input/Data/SeaGrant_data_complete_2015.csv'))
 fulldomain <- sector_data.df$TARGET_FID # Model domain
@@ -78,15 +70,52 @@ F.V_n_i_p <- F$Annuity[Aqua.Full.Domain.Logical]
 K.V_n_i_p <- K$Annuity[Aqua.Full.Domain.Logical]
 
 # Run the Halibut fishing model and then load the results
-user.response <- readline("Run halibut model(1) or load results(0)?")
-if(readline("Run halibut model or load results Y/N? ") == 'Y'){run_matlab_script(paste0(wkdir,'/MSP_Model/Scripts/Halibut/Tuner_free_params_v4.m'))}
+if(readline("Run halibut model or load results Y/N? ") == 'Y'){
+  print("Launching MATLAB.....");
+  system2('/Applications/MATLAB_R2016b.app/bin/matlab',
+    args = c('-nodesktop','-noFigureWindows','-nosplash','-r',
+    "run\\(\\'~/MSP_Model/Scripts/Halibut/Tuner_free_params_v4.m\\'\\)"))
+  system2()
+  # run_matlab_script(paste0(wkdir,'/MSP_Model/Scripts/Halibut/Tuner_free_params_v4.m'))
+}
 H <- read_excel(paste0(wkdir,'/MSP_Model/Output/Target_FID_and_Yi_fulldomain_NPV_at_MSY_noAqua.xlsx'))
 
 # Load Viewshed Data
-F.Viewshed <- as.numeric(gsub(",", "", df$res_views_8k)) + as.numeric(gsub(",", "",df$park_views_8k))
-MK.Viewshed <- as.numeric(gsub(",", "", df$res_views_3k)) + as.numeric(gsub(",", "",df$park_view_3k))
+F.Viewshed <- as.numeric(gsub(",", "", sector_data.df$res_views_8k)) + as.numeric(gsub(",", "",sector_data.df$park_views_8k))
+MK.Viewshed <- as.numeric(gsub(",", "", sector_data.df$res_views_3k)) + as.numeric(gsub(",", "",sector_data.df$park_view_3k))
 
-#
+# Calculate disease impacts or load previously saved results
+# Load pathogen connectivity matrix
+# Temp file
+filename <- paste(tempfile(tmpdir = paste0(wkdir,'/MSP_Model/Input/Data/')),".mat",sep="")
+# Write a .mat file with the filtered connectivity matrix
+writeMat(filename,
+eig = readMat(paste0(wkdir,
+  '/MSP_Model/Input/Data/disease_connect_matrix.mat'))$disease.connect.matrix[F$Annuity > 0,F$Annuity > 0])
+# Character vector to send to matlab from R
+code <- c("cd(strcat(pwd,\'/MSP_Model/Scripts/\'));",paste0('load \'',filename,'\';'),'d = abs(eigencentrality(eig));',
+'save(\'tmp.mat\',\'d\')')
+# Send arguments to matlab
+run_matlab_code(code)
+# Read the Mat file and remove the temporary one
+D <- readMat(paste0(wkdir,'/MSP_Model/Scripts/tmp.mat'))$d
+system2('rm',args = paste0(wkdir,'/MSP_Model/Scripts/tmp.mat'))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # Calculate R_max for viewshed for each developable site
 Vi <- apply(cbind(F.Viewshed,MK.Viewshed),MARGIN = 1, FUN = max)[Aqua.Full.Domain.Logical]
@@ -105,11 +134,14 @@ B.V_n_i_p[F.NPV[Aqua.Full.Domain.Logical] > 0] <- B.R_max - Bi
 # Disease
 ## Load disease connectivity matrix, which will be used as the adjacency matrix
 # for the disease propagation network
-disease_mat <- readMat(paste0(model_directory,'Data/disease_connect_matrix.mat'))$disease.connect.matrix
+disease_mat <- readMat(paste0(wkdir,'/MSP_Model/Input/Data/disease_connect_matrix.mat'))$disease.connect.matrix
 # Remove all sites which cannot be developed for finfish
 disease_mat_finfish <- disease_mat[F$Annuity > 0,F$Annuity > 0]
-graph <- graph_from_adjacency_matrix(disease_mat_finfish,diag = T, weighted = T, mode = 'undirected')
-Di_compare <- eigen_centrality(graph, directed = T, weights = E(graph)$weight)$vector
+system2('/Applications/MATLAB_R2016b.app/bin/matlab',
+  args = c('-nodesktop','-noFigureWindows','-nodisplay','-nosplash',
+  '-r \\"try, r'))
+graph <- graph_from_adjacency_matrix(disease_mat_finfish, weighted = T, mode = 'undirected')
+Di_compare <- eigen_centrality(graph, directed = F, weights = E(graph)$weight)$vector
 # plot(1:392,Di_compare/sum(Di_compare))
 # points(1:392,Di/sum(Di),col='red')
 Di <- read.csv(file = paste0(model_directory,'Data/Raw_Patch_Data.csv'))[F.NPV[Aqua.Full.Domain.Logical] > 0,7]

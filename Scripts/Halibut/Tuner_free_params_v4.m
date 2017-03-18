@@ -1,3 +1,4 @@
+disp('MATLAB MSP Halibut Model')
 close all
 clear all
 disp('------------------------')
@@ -275,3 +276,4 @@ if runtimeseries_0N_1Y==1
     target_fid_fulldomain=study_area_polygons_PacCoastFisheryGIS_NUM(:,col_target_fid);
     xlswrite(strcat(output_data_dir,'Target_FID_and_Yi_fulldomain_NPV_at_MSY_noAqua.xlsx'),[target_fid_fulldomain Yi_fulldomain_NPV]);
 end
+quit()
