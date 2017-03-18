@@ -7,7 +7,6 @@
   # Double check that the viewshed, benthic, disease is loading accurately
   # Make a disease script in matlab or create one using R
   # NOTE: MATLAB requires 'Mapping Toolbox', 'Bioinformatics', 'Parallel Optimization'
-# Install packages
 # Set current working directory as a string
 wkdir <- getwd()
 # Load necessary R libraries. For the function R_Libraries,
@@ -16,7 +15,6 @@ wkdir <- getwd()
 # current workspace.
 source(paste0(wkdir,'/MSP_Model/Scripts','/R_Libraries.r'))
 R_Libraries(F) # After the first initial run this can be set to F
-devtools::install_github("hadley/readxl")
 # Set global variables
 n.sector <- 7 # Number of sectors
 epsilon <- 0.2 # Stepsize of sector weights
@@ -33,59 +31,63 @@ r_iy_aqua <- do.call(rbind, replicate(length(fulldomain), discount_factor, simpl
 
 # Calculate the 10-year Net Present Value (NPV) and annuities for each form of aquaculture
 # and halibut (the only impacted sector with direct monetary value)
-
-# Function to calculate the NPV/annuities for Mussel and Kelp
-Value.MK <- function(yield,upfront.cost,annual.cost,price){
-  revenue <- do.call(cbind, replicate(t, yield * price, simplify=FALSE))
-  cost <- cbind(upfront.cost + annual.cost,
-    do.call(cbind, replicate(t - 1, annual.cost, simplify=FALSE)))
-  profit <- (revenue - cost) * r_iy_aqua
-  profit[profit < 0] <- 0
-  NPV <- apply(profit, FUN = sum, MARGIN = 1)
-  Annuity = (r*NPV)/(1-((1+r)^-t))
-  return(list(NPV = NPV,Annuity = Annuity))
-}
-# Function to calculate the NPV/annuities for Finfish
-Value.F <- function(yield,costs,price){
-  revenue <- do.call(cbind, replicate(t, yield * price, simplify=FALSE))
-  cost <- sector_data.df$fish.annual.operating.costs
-  profit <- (revenue - cost) * r_iy_aqua
-  profit[profit < 0] <- 0
-  NPV <- apply(profit, FUN = sum, MARGIN = 1)
-  Annuity = (r*NPV)/(1-((1+r)^-t))
-  return(list(NPV = NPV,Annuity = Annuity))
-}
+  # Function to calculate the NPV/annuities for Mussel and Kelp
+  Value.MK <- function(yield,upfront.cost,annual.cost,price){
+    revenue <- do.call(cbind, replicate(t, yield * price, simplify=FALSE))
+    cost <- cbind(upfront.cost + annual.cost,
+      do.call(cbind, replicate(t - 1, annual.cost, simplify=FALSE)))
+    profit <- (revenue - cost) * r_iy_aqua
+    profit[profit < 0] <- 0
+    NPV <- apply(profit, FUN = sum, MARGIN = 1)
+    Annuity = (r*NPV)/(1-((1+r)^-t))
+    return(list(NPV = NPV,Annuity = Annuity))
+  }
+  # Function to calculate the NPV/annuities for Finfish
+  Value.F <- function(yield,costs,price){
+    revenue <- do.call(cbind, replicate(t, yield * price, simplify=FALSE))
+    cost <- sector_data.df$fish.annual.operating.costs
+    profit <- (revenue - cost) * r_iy_aqua
+    profit[profit < 0] <- 0
+    NPV <- apply(profit, FUN = sum, MARGIN = 1)
+    Annuity = (r*NPV)/(1-((1+r)^-t))
+    return(list(NPV = NPV,Annuity = Annuity))
+  }
 # Calculate respective NPV/annuities
 # Mussel, fixed price of $3.30 per kg
-M <- Value.MK(sector_data.df$mussel.yield,
-  sector_data.df$mussel.upfront.cost,
-  sector_data.df$mussel.annual.operating.cost,3.3)
+  M <- Value.MK(sector_data.df$mussel.yield,
+    sector_data.df$mussel.upfront.cost,
+    sector_data.df$mussel.annual.operating.cost,3.3)
 # Finfish, fixed price of $8.00 per kg
-F <- Value.F(sector_data.df$fish.yield,
-  sector_data.df$fish.upfront.cost,
-  unique(sector_data.df$fish.price[sector_data.df$fish.price>0]))
+  F <- Value.F(sector_data.df$fish.yield,
+    sector_data.df$fish.upfront.cost,
+    unique(sector_data.df$fish.price[sector_data.df$fish.price>0]))
 # Kelp, fixed price of $3.00 per kg
-K <- Value.MK(sector_data.df$kelp.yield,
-  sector_data.df$kelp.upfront.cost,
-  sector_data.df$kelp.annual.operating.cost,3)
+  K <- Value.MK(sector_data.df$kelp.yield,
+    sector_data.df$kelp.upfront.cost,
+    sector_data.df$kelp.annual.operating.cost,3)
 # Remove unprofitable sites and generate seperate vectors for
-# 1.) Those sites in which ventures will be profitable for at least one type
-# of aquaculture (Aqua.Full.Domain), 2.) Sites that will be profitable for
-# mussel (M.V_n_i_p), 3.) Sites that will be profitable for finfish (F.V_n_i_p),
-# and 4.) Sites that will be profitable for finfish (K.V_n_i_p)
+# Those sites in which ventures will be profitable for at least one type
+# of aquaculture (var Aqua.Full.Domain),
 Aqua.Full.Domain <- data.frame(M$Annuity,F$Annuity,K$Annuity)
 Aqua.Full.Domain.Logical <- apply(1 * (Aqua.Full.Domain > 0),FUN=sum,MARGIN=1) > 0
+# Sites that will be profitable for mussel (M.V_n_i_p)
 M.V_n_i_p <- M$Annuity[Aqua.Full.Domain.Logical]
+# Sites that will be profitable for finfish (F.V_n_i_p)
 F.V_n_i_p <- F$Annuity[Aqua.Full.Domain.Logical]
+# Sites that will be profitable for kelp (K.V_n_i_p)
 K.V_n_i_p <- K$Annuity[Aqua.Full.Domain.Logical]
-#
-# # Run Halibut fishing model using matlab
-run_matlab_script(paste0(wkdir,'/MSP_Model/Scripts/Halibut_Lab_Computer/Tuner_free_params_v4.m'))
-## Load Halibut Data
+
+# Run the Halibut fishing model and then load the results
+user.response <- readline("Run halibut model(1) or load results(0)?")
+if(readline("Run halibut model or load results Y/N? ") == 'Y'){run_matlab_script(paste0(wkdir,'/MSP_Model/Scripts/Halibut/Tuner_free_params_v4.m'))}
 H <- read_excel(paste0(wkdir,'/MSP_Model/Output/Target_FID_and_Yi_fulldomain_NPV_at_MSY_noAqua.xlsx'))
-## Load Viewshed Data  # Viewshed
+
+# Load Viewshed Data
 F.Viewshed <- as.numeric(gsub(",", "", df$res_views_8k)) + as.numeric(gsub(",", "",df$park_views_8k))
 MK.Viewshed <- as.numeric(gsub(",", "", df$res_views_3k)) + as.numeric(gsub(",", "",df$park_view_3k))
+
+#
+
 # Calculate R_max for viewshed for each developable site
 Vi <- apply(cbind(F.Viewshed,MK.Viewshed),MARGIN = 1, FUN = max)[Aqua.Full.Domain.Logical]
 # Find the maximum response across all sites
