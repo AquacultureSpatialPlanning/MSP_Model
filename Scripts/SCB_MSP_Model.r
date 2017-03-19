@@ -61,12 +61,12 @@ r_iy_aqua <- do.call(rbind, replicate(length(fulldomain), discount_factor, simpl
 # of aquaculture (var Aqua.Full.Domain),
 Aqua.Full.Domain <- data.frame(M$Annuity,F$Annuity,K$Annuity)
 Aqua.Full.Domain.Logical <- apply(1 * (Aqua.Full.Domain > 0),FUN=sum,MARGIN=1) > 0
-# Sites that will be profitable for mussel (M.V_n_i_p)
-M.V_n_i_p <- M$Annuity[Aqua.Full.Domain.Logical]
-# Sites that will be profitable for finfish (F.V_n_i_p)
-F.V_n_i_p <- F$Annuity[Aqua.Full.Domain.Logical]
-# Sites that will be profitable for kelp (K.V_n_i_p)
-K.V_n_i_p <- K$Annuity[Aqua.Full.Domain.Logical]
+# Sites that will be profitable for mussel (M.V)
+M.V <- M$Annuity[Aqua.Full.Domain.Logical]
+# Sites that will be profitable for finfish (F.V)
+F.V <- F$Annuity[Aqua.Full.Domain.Logical]
+# Sites that will be profitable for kelp (K.V)
+K.V <- K$Annuity[Aqua.Full.Domain.Logical]
 
 # Run the Halibut fishing model and then load the results
 if(readline("Run halibut model or load results Y/N? ") == 'Y'){
@@ -76,15 +76,15 @@ if(readline("Run halibut model or load results Y/N? ") == 'Y'){
     "run\\(\\'~/MSP_Model/Scripts/Halibut/Tuner_free_params_v4.m\\'\\)"))
   # run_matlab_script(paste0(wkdir,'/MSP_Model/Scripts/Halibut/Tuner_free_params_v4.m'))
 }
-H.V_n_i_p  <- read.csv(paste0(wkdir,'/MSP_Model/Output/Data/Target_FID_and_Yi_fulldomain_NPV_at_MSY_noAqua.csv'),header=FALSE)[,2][Aqua.Full.Domain.Logical]
+H.V  <- read.csv(paste0(wkdir,'/MSP_Model/Output/Data/Target_FID_and_Yi_fulldomain_NPV_at_MSY_noAqua.csv'),header=FALSE)[,2][Aqua.Full.Domain.Logical]
 
 # Load Viewshed Data
-V_F.V_n_i_p <- (as.numeric(gsub(",", "", sector_data.df$res_views_8k)) + as.numeric(gsub(",", "",sector_data.df$park_views_8k)))[Aqua.Full.Domain.Logical]
-V_MK.V_n_i_p  <- (as.numeric(gsub(",", "", sector_data.df$res_views_3k)) + as.numeric(gsub(",", "",sector_data.df$park_view_3k)))[Aqua.Full.Domain.Logical]
+V_F.V <- (as.numeric(gsub(",", "", sector_data.df$res_views_8k)) + as.numeric(gsub(",", "",sector_data.df$park_views_8k)))[Aqua.Full.Domain.Logical]
+V_MK.V  <- (as.numeric(gsub(",", "", sector_data.df$res_views_3k)) + as.numeric(gsub(",", "",sector_data.df$park_view_3k)))[Aqua.Full.Domain.Logical]
 
 # Load Benthic Data, for cells which are not developable for fish aqua set to NA
-B.V_n_i_p <- rep(NA,times = length(F.V_n_i_p))
-B.V_n_i_p[F.V_n_i_p > 0] <- sector_data.df$TOC.flux[Aqua.Full.Domain.Logical][F.V_n_i_p > 0]
+B.V <- rep(NA,times = length(F.V))
+B.V[F.V > 0] <- sector_data.df$TOC.flux[Aqua.Full.Domain.Logical][F.V > 0]
 
 
 # Run the eigenvector centrality diseaase model in MATLAB and then load the results.
@@ -99,19 +99,113 @@ code <- c("cd(strcat(pwd,\'/MSP_Model/Scripts/\'));",paste0('load \'',filename,'
 # Send arguments to matlab
 run_matlab_code(code)
 # Read the Mat file and remove the temporary one
-D.V_n_i_p <- rep(NA,times = length(F.V_n_i_p))
-D.V_n_i_p[F.V_n_i_p > 0] <- readMat(paste0(wkdir,'/MSP_Model/Scripts/tmp.mat'))$d
+D.V <- rep(NA,times = length(F.V))
+D.V[F.V > 0] <- readMat(paste0(wkdir,'/MSP_Model/Scripts/tmp.mat'))$d
 system2('rm',args = paste0(wkdir,'/MSP_Model/Scripts/tmp.mat'))
 # Save all of the raw outputs of each sector model in a seperate file --> do later
 print('Raw Impacts/Value.....')
-Raw_Impacts <- data.frame(Mussel = M.V_n_i_p, Finfish = F.V_n_i_p, Kelp = K.V_n_i_p, Halibut = H.V_n_i_p,
-  Viewshed_Mussel_Kelp = V_MK.V_n_i_p, Viewshed_Finfish = V_F.V_n_i_p, Benthic_Impacts = B.V_n_i_p,
-  Disease_Risk = D.V_n_i_p) %>% glimpse()
+Raw_Impacts <- data.frame(Mussel = M.V, Finfish = F.V, Kelp = K.V, Halibut = H.V,
+  Viewshed_Mussel_Kelp = V_MK.V, Viewshed_Finfish = V_F.V, Benthic_Impacts = B.V,
+  Disease_Risk = D.V) %>% glimpse()
 
 ## Tradeoff Model
+# Define parameters for the model
+sector_names <- names(Raw_Impacts)
+n <- 7 # Number of sectors
+i <- 1061 # Number of sites, nrow(Raw_Impacts)
+p <- 4 # Number of management options, 0 = no development, 1 = develop mussel, 2 = develop finfish, 3 = develop kelp, 4 = no development
+# Using the definied parameters derive variable V_n_i_p (value to sector n at site i for pursuing development option p)
+p_options <- list(c('Halibut'),c('Mussel','Viewshed_Mussel_Kelp'),c('Finfish','Viewshed_Finfish','Benthic_Impacts','Disease_Risk'),c('Kelp','Viewshed_Mussel_Kelp'))
+# Make a list of dataframes consiting of the responses for each policy p for each sector n at each site i
+R_n_i_p <- setNames(lapply(1:p,df = Raw_Impacts,FUN = function(x,df){
+      # Make the dataframe for each policy
+      setNames(data.frame(t(do.call('rbind',lapply(1:length(sector_names), FUN = function(y){
+        if(sector_names[y] %in% p_options[[x]]){
+          return(df[[y]])
+        }else{
+          # For a sector recieving zero value or full impact set sector values to zero unless they were previously set as NA
+          df[[y]][!is.na(df[[y]])] <- 0
+          return(df[[y]])
+        }
+        })))),sector_names)
+    }),c('No_Development','Develop_Mussel','Develop_Finfish','Develop_Kelp'))
+# For sectors whose response is negative, calculate R_bar
+R_negative_sector_names <- sector_names[grepl(c('Viewshed_|Benthic_|Disease_'),sector_names)]
+R_bar_n setNames(data.frame(t(do.call('rbind',lapply(1:length(R_negative_sector_names), data = lapply(R_n_i_p, R_negative_sector_names, FUN = function(x,y){
+  apply(x[names(x) %in% R_negative_sector_names],MARGIN = 2, FUN = function(x) max(x,na.rm = T))
+  }),FUN = function(x,data){
+    max(sapply(data,"[",x),na.rm = T)
+    })))),R_negative_sector_names)
+# Then calculate V_n_i_p based on the response of each sector
 
 
 
+
+# Add the actual values of each sector n for each policy p at site i
+# Develop mussel
+p = p_options[[1]]
+# Responses
+# No development
+i = 1
+p = 0
+n_v <- 'Halibut'
+n_0 <- sector_names[!(sector_names %in% names_v)]
+str(lapply(1:p,df = Raw_Impacts,FUN = Responses))
+df = Raw_Impacts
+Responses <- function(x,df){
+  return(t(do.call('rbind',lapply(1:length(sector_names), FUN = function(y){
+    if(sector_names[y] %in% p_options[[x]]){
+      return(df[[y]])
+    }else{
+      df[[y]][!is.na(df[[y]])] <- 0
+      return(df[[y]])
+    }
+    }))))
+}
+  df[,p_options[[x]]]
+  tdf[,!(sector_names %in% p_options[[x]])]
+  unlist(ifelse(sector_names %in% p_options[[x]],df %>% select(contains(p_options[[x]])),rep(0,times = nrow(df))))
+  df[,!(sector_names %in% p_options[[x]])] <- ifelse(sector_names %in% p_options[[x]])
+
+
+}
+sector_names[!(sector_names %in% p_options[[x]])]
+
+# First invert the impacts using Eq. 26 of the Supplemental Information in Lester et al. 2017
+Response <- function(R,n){
+
+  if(Sector.Name %in% c('Mussel','Finfish','Kelp','Halibut')){
+    Response <- Value
+  }else{
+    if(Impacted == T){
+      Inverted <- max(Value) - Value
+    }else{
+      Inverted = Value
+    }
+    # Scale each inverted by the max value
+    Inverted.Scaled <- Inverted / max(Inverted)
+    Non.Inverted.Scaled <- Value / sum(Value)
+  }
+  # Logical for places which have zero value
+  # Logical.Value <- 1 * (Value>0)
+  # Make a data frame for value, inverted value, and inverted scaled value
+  X.df <- data.frame(Value = Value, Inverted = Inverted, Inverted_Scaled = Inverted.Scaled, Non_Inverted_Scaled = Non.Inverted.Scaled)
+  return(X.df)
+}
+
+Inverted <- rep(NA,length(Value))
+Inverted.Scaled <- rep(NA,length(Value))
+Non.Inverted.Scaled <- rep(NA,length(Value))
+Value.tmp <- rep(NA,length(Value))
+
+Value <- Value[F.NPV[Aqua.Full.Domain.Logical]>0]
+Inverted[F.NPV[Aqua.Full.Domain.Logical]>0] <- max(Value) - Value
+
+Inverted.Scaled <- Inverted / max(Inverted,na.rm = T)
+Non.Inverted.Scaled[F.NPV[Aqua.Full.Domain.Logical]>0] <- Value / sum(Value,na.rm=T)
+
+Value.tmp[F.NPV[Aqua.Full.Domain.Logical]>0] <- Value
+Value <- Value.tmp
 
 
 
