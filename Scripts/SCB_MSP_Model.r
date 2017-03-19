@@ -76,14 +76,16 @@ if(readline("Run halibut model or load results Y/N? ") == 'Y'){
     "run\\(\\'~/MSP_Model/Scripts/Halibut/Tuner_free_params_v4.m\\'\\)"))
   # run_matlab_script(paste0(wkdir,'/MSP_Model/Scripts/Halibut/Tuner_free_params_v4.m'))
 }
-H <- read_excel(paste0(wkdir,'/MSP_Model/Output/Target_FID_and_Yi_fulldomain_NPV_at_MSY_noAqua.xlsx'))
+H.V_n_i_p  <- read_excel(paste0(wkdir,'/MSP_Model/Output/Target_FID_and_Yi_fulldomain_NPV_at_MSY_noAqua.xlsx'))
 
 # Load Viewshed Data
-F.Viewshed <- as.numeric(gsub(",", "", sector_data.df$res_views_8k)) + as.numeric(gsub(",", "",sector_data.df$park_views_8k))
-MK.Viewshed <- as.numeric(gsub(",", "", sector_data.df$res_views_3k)) + as.numeric(gsub(",", "",sector_data.df$park_view_3k))
+V_F.V_n_i_p <- as.numeric(gsub(",", "", sector_data.df$res_views_8k)) + as.numeric(gsub(",", "",sector_data.df$park_views_8k))
+MK_V.V_n_i_p  <- as.numeric(gsub(",", "", sector_data.df$res_views_3k)) + as.numeric(gsub(",", "",sector_data.df$park_view_3k))
 
-# Load Benthic Data
-Bi <- df$TOC.flux[F.V_n_i_p > 0]
+# Load Benthic Data, for cells which are not developable for fish aqua set to NA
+B.V_n_i_p <- rep(NA,times = length(F.V_n_i_p))
+B.V_n_i_p[F.V_n_i_p > 0] <- sector_data.df$TOC.flux[Aqua.Full.Domain.Logical][F.V_n_i_p > 0]
+
 
 # Run the eigenvector centrality diseaase model in MATLAB and then load the results.
 # Write a .mat file with the filtered connectivity matrix
@@ -97,9 +99,75 @@ code <- c("cd(strcat(pwd,\'/MSP_Model/Scripts/\'));",paste0('load \'',filename,'
 # Send arguments to matlab
 run_matlab_code(code)
 # Read the Mat file and remove the temporary one
-D <- readMat(paste0(wkdir,'/MSP_Model/Scripts/tmp.mat'))$d
+D.V_n_i_p <- readMat(paste0(wkdir,'/MSP_Model/Scripts/tmp.mat'))$d
 system2('rm',args = paste0(wkdir,'/MSP_Model/Scripts/tmp.mat'))
 
+# Save all of the raw outputs of each sector model in a seperate file --> do later
+
+
+## Tradeoff Model
+
+
+
+
+
+
+
+
+
+Vi <- apply(cbind(F.Viewshed,MK.Viewshed),MARGIN = 1, FUN = max)[Aqua.Full.Domain.Logical]
+Vi_diff <- Vi - MK.Viewshed[Aqua.Full.Domain.Logical]
+
+New.Approach.DF <- function(Value,Impacted,Sector.Name){
+  # max subtracted from each value
+  if(Sector.Name == 'Benthic' | Sector.Name == 'Disease'){
+    Inverted <- rep(NA,length(Value))
+    Inverted.Scaled <- rep(NA,length(Value))
+    Non.Inverted.Scaled <- rep(NA,length(Value))
+    Value.tmp <- rep(NA,length(Value))
+
+    Value <- Value[F.NPV[Aqua.Full.Domain.Logical]>0]
+    Inverted[F.NPV[Aqua.Full.Domain.Logical]>0] <- max(Value) - Value
+
+    Inverted.Scaled <- Inverted / max(Inverted,na.rm = T)
+    Non.Inverted.Scaled[F.NPV[Aqua.Full.Domain.Logical]>0] <- Value / sum(Value,na.rm=T)
+
+    Value.tmp[F.NPV[Aqua.Full.Domain.Logical]>0] <- Value
+    Value <- Value.tmp
+  }else{
+    if(Impacted == T){
+      Inverted <- max(Value) - Value
+    }else{
+      Inverted = Value
+    }
+    # Scale each inverted by the max value
+    Inverted.Scaled <- Inverted / max(Inverted)
+    Non.Inverted.Scaled <- Value / sum(Value)
+  }
+  # Logical for places which have zero value
+  # Logical.Value <- 1 * (Value>0)
+  # Make a data frame for value, inverted value, and inverted scaled value
+  X.df <- data.frame(Value = Value, Inverted = Inverted, Inverted_Scaled = Inverted.Scaled, Non_Inverted_Scaled = Non.Inverted.Scaled)
+  return(X.df)
+}
+V.M.DF <- New.Approach.DF(Aqua$M.NPV,F,'Mussel')
+V.F.DF <- New.Approach.DF(Aqua$F.NPV,F,'Finfish')
+V.K.DF <- New.Approach.DF(Aqua$K.NPV,F,'Kelp')
+V.H.DF <- New.Approach.DF(H.NPV,F,'Halibut')
+V.V.DF <- New.Approach.DF(Vi,T,'Viewshed')
+V.V.Diff.DF <- New.Approach.DF(Vi_diff,T,'Viewshed')
+V.B.DF <- New.Approach.DF(Bi,T,'Benthic')
+V.D.DF <- New.Approach.DF(Di,T,'Disease')
+head(V.D.DF)
+# Combine Data into list
+library(gtools)
+a <- seq(from = 0, to = 1, by = epsilon)
+alpha.values <- function(a,r,repeats = T){
+  repeated.elements <- permutations(n = length(a),r = r,a,repeats.allowed=repeats)
+
+  return(repeated.elements)
+    # unique(apply(repeated.elements / apply(repeated.elements,MARGIN=1,FUN = max), MARGIN = 1, FUN = mean))
+}
 
 
 
