@@ -85,13 +85,13 @@ MK.Viewshed <- as.numeric(gsub(",", "", sector_data.df$res_views_3k)) + as.numer
 # Load Benthic Data
 Bi <- df$TOC.flux[F.V_n_i_p > 0]
 
-# Run the eigenvector centrality diseaase model in MATLAB and then load the results
-filename <- paste(tempfile(tmpdir = paste0(wkdir,'/MSP_Model/Input/Data/')),".mat",sep="")
+# Run the eigenvector centrality diseaase model in MATLAB and then load the results.
 # Write a .mat file with the filtered connectivity matrix
+filename <- paste(tempfile(tmpdir = paste0(wkdir,'/MSP_Model/Input/Data/')),".mat",sep="")
 writeMat(filename,
 eig = readMat(paste0(wkdir,
   '/MSP_Model/Input/Data/disease_connect_matrix.mat'))$disease.connect.matrix[F$Annuity > 0,F$Annuity > 0])
-# Character vector to send to matlab from R
+# Character vector to send to MATLAB from R. The function eigencentrality is derived from http://strategic.mit.edu/downloads.php?page=matlab_networks
 code <- c("cd(strcat(pwd,\'/MSP_Model/Scripts/\'));",paste0('load \'',filename,'\';'),'d = abs(eigencentrality(eig));',
 'save(\'tmp.mat\',\'d\')')
 # Send arguments to matlab
