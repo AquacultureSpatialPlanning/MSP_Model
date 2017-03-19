@@ -76,11 +76,11 @@ if(readline("Run halibut model or load results Y/N? ") == 'Y'){
     "run\\(\\'~/MSP_Model/Scripts/Halibut/Tuner_free_params_v4.m\\'\\)"))
   # run_matlab_script(paste0(wkdir,'/MSP_Model/Scripts/Halibut/Tuner_free_params_v4.m'))
 }
-H.V_n_i_p  <- read_excel(paste0(wkdir,'/MSP_Model/Output/Target_FID_and_Yi_fulldomain_NPV_at_MSY_noAqua.xlsx'))
+H.V_n_i_p  <- read.csv(paste0(wkdir,'/MSP_Model/Output/Data/Target_FID_and_Yi_fulldomain_NPV_at_MSY_noAqua.csv'),header=FALSE)[,2][Aqua.Full.Domain.Logical]
 
 # Load Viewshed Data
-V_F.V_n_i_p <- as.numeric(gsub(",", "", sector_data.df$res_views_8k)) + as.numeric(gsub(",", "",sector_data.df$park_views_8k))
-MK_V.V_n_i_p  <- as.numeric(gsub(",", "", sector_data.df$res_views_3k)) + as.numeric(gsub(",", "",sector_data.df$park_view_3k))
+V_F.V_n_i_p <- (as.numeric(gsub(",", "", sector_data.df$res_views_8k)) + as.numeric(gsub(",", "",sector_data.df$park_views_8k)))[Aqua.Full.Domain.Logical]
+V_MK.V_n_i_p  <- (as.numeric(gsub(",", "", sector_data.df$res_views_3k)) + as.numeric(gsub(",", "",sector_data.df$park_view_3k)))[Aqua.Full.Domain.Logical]
 
 # Load Benthic Data, for cells which are not developable for fish aqua set to NA
 B.V_n_i_p <- rep(NA,times = length(F.V_n_i_p))
@@ -99,11 +99,14 @@ code <- c("cd(strcat(pwd,\'/MSP_Model/Scripts/\'));",paste0('load \'',filename,'
 # Send arguments to matlab
 run_matlab_code(code)
 # Read the Mat file and remove the temporary one
-D.V_n_i_p <- readMat(paste0(wkdir,'/MSP_Model/Scripts/tmp.mat'))$d
+D.V_n_i_p <- rep(NA,times = length(F.V_n_i_p))
+D.V_n_i_p[F.V_n_i_p > 0] <- readMat(paste0(wkdir,'/MSP_Model/Scripts/tmp.mat'))$d
 system2('rm',args = paste0(wkdir,'/MSP_Model/Scripts/tmp.mat'))
-
 # Save all of the raw outputs of each sector model in a seperate file --> do later
-
+print('Raw Impacts/Value.....')
+Raw_Impacts <- data.frame(Mussel = M.V_n_i_p, Finfish = F.V_n_i_p, Kelp = K.V_n_i_p, Halibut = H.V_n_i_p,
+  Viewshed_Mussel_Kelp = V_MK.V_n_i_p, Viewshed_Finfish = V_F.V_n_i_p, Benthic_Impacts = B.V_n_i_p,
+  Disease_Risk = D.V_n_i_p) %>% glimpse()
 
 ## Tradeoff Model
 
