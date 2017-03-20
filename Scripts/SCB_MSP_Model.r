@@ -156,10 +156,16 @@ X_n_i_p <- setNames(lapply(1:p, df = V_n_i_p, FUN = function(p,df){
 library(gtools)
 epsilon <- .20 # Epsilon step size, default is 0.20
 a_values <- seq(from = 0, to = 1, by = epsilon) # The unique values for each sector and site
-a <- permutations(n = length(a_values),7,a_values,repeats.allowed=T) # Matrix of unique alpha weights
-# Find the optimal policy option for each site in a given a 
-
-
+a_tmp <- permutations(n = length(a_values),7,a_values,repeats.allowed=T) # Matrix of unique alpha weights
+a <- cbind(a_tmp[,1:5],a_tmp[,5],a_tmp[,6:7]) # Do not do this if truely only 7 sectors are used, i.e. viewshed maximum across both sets is used vs. how it is currently where they are handled seperately
+# Find the optimal policy option for each site in a given, alpha
+print_a <- seq(from = 1, to = nrow(a), by = 1000)
+obj_i <- lapply(1:4188, FUN = function(x){
+  apply(sapply(1:p, df = X_n_i_p, FUN = function(y,df){
+    apply(data.frame(mapply('*',df[[y]],c(a[x,]),SIMPLIFY = FALSE)), MARGIN = 1, FUN = function(z) sum(z,na.rm = T)) # Multiply each i for a given p by the sector specific weight set by a given row of the alpha matrix
+    }),MARGIN = 1, which.max) - 1
+    # print(x)
+})
 
 
 
