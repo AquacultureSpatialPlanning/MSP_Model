@@ -136,14 +136,13 @@ R_bar_n <- setNames(data.frame(t(do.call('rbind',lapply(1:length(R_negative_sect
   }),FUN = function(x,data){
     max(sapply(data,"[",x),na.rm = T)
     })))),R_negative_sector_names)
-R_bar_n <- R_bar_n %>% mutate(Viewshed_Mussel_Kelp = Viewshed_Finfish)
 # Then calculate V_n_i_p based on the response of each sector (Supp. Info, Eq. S26)
 V_n_i_p <- setNames(lapply(1:p, df = R_n_i_p, df_bar = R_bar_n, FUN = function(x, df, df_bar){
   setNames(data.frame(t(do.call('rbind',lapply(1:length(sector_names), FUN = function(y){
     if(names(df[[x]])[y] %in% R_negative_sector_names){
-      R_bar_n[[names(df[[x]])[y]]] - df[[x]][,y]
+      return(R_bar_n[[names(df[[x]])[y]]] - df[[x]][,y])
     }else{
-      df[[x]][,y]
+      return(df[[x]][,y])
     }
     })))),sector_names)
   }), c('No_Development','Develop_Mussel','Develop_Finfish','Develop_Kelp'))
