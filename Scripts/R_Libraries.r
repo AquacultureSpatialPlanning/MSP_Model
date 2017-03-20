@@ -1,14 +1,13 @@
 R_Libraries <- function(install_packs){
-	suppressMessages(require(XML))
 	theurl <- "http://www.computerworld.com/article/2921176/business-intelligence/great-r-packages-for-data-import-wrangling-visualization.html"
 	tables <- readHTMLTable(theurl)
 	if(install_packs == T){
 		install.packages(as.character(tables$cwsearchabletable$Package), repos = 'https://cran.mtu.edu/')
-		devtools::install_github("hadley/readxl")
 		devtools::install_github("muschellij2/matlabr")
 		install.packages("colorout")
 	}
 	# for(index in 1:length(as.character(tables$cwsearchabletable$Package))){suppressMessages(require(as.character(tables$cwsearchabletable$Package[index]), character.only = T))}
+	suppressMessages(require(XML))
 	suppressMessages(require(RPostgreSQL))
 	suppressMessages(require(dplyr))
 	suppressMessages(require(plyr))
@@ -26,7 +25,7 @@ R_Libraries <- function(install_packs){
 	suppressMessages(require(ggplot2))
 	suppressMessages(require(TeachingDemos))
 	suppressMessages(require(maps))
-	suppressMessages(require(mapdata))
+	# suppressMessages(require(mapdata))
 	suppressMessages(require(maptools))
 	suppressMessages(require(scales))
 	suppressMessages(require(ggmap))
@@ -42,7 +41,7 @@ R_Libraries <- function(install_packs){
 	suppressMessages(require(tiff))
 	suppressMessages(require(dplyr))
 	suppressMessages(require(igraph))
-	suppressMessages(require(devtool))
+	# suppressMessages(require(devtool))
 	suppressMessages(require(matlabr))
 	suppressMessages(require(colorout))
 	suppressMessages(require(matlabr))
