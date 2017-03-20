@@ -131,12 +131,38 @@ R_n_i_p <- setNames(lapply(1:p,df = Raw_Impacts,FUN = function(x,df){
     }),c('No_Development','Develop_Mussel','Develop_Finfish','Develop_Kelp'))
 # For sectors whose response is negative, calculate R_bar
 R_negative_sector_names <- sector_names[grepl(c('Viewshed_|Benthic_|Disease_'),sector_names)]
-R_bar_n setNames(data.frame(t(do.call('rbind',lapply(1:length(R_negative_sector_names), data = lapply(R_n_i_p, R_negative_sector_names, FUN = function(x,y){
+R_bar_n <- setNames(data.frame(t(do.call('rbind',lapply(1:length(R_negative_sector_names), data = lapply(R_n_i_p, R_negative_sector_names, FUN = function(x,y){
   apply(x[names(x) %in% R_negative_sector_names],MARGIN = 2, FUN = function(x) max(x,na.rm = T))
   }),FUN = function(x,data){
     max(sapply(data,"[",x),na.rm = T)
     })))),R_negative_sector_names)
-# Then calculate V_n_i_p based on the response of each sector
+# Then calculate V_n_i_p based on the response of each sector (Supp. Info, Eq. S26)
+V_n_i_p <- setNames(lapply(1:p, df = R_n_i_p, df_bar = R_bar_n, FUN = function(x, df, df_bar){
+  setNames(data.frame(t(do.call('rbind',lapply(1:length(sector_names), FUN = function(y){
+    if(names(df[[x]])[y] %in% R_negative_sector_names){
+      R_bar_n[[names(df[[x]])[y]]] - df[[x]][,y]
+    }else{
+      df[[x]][,y]
+    }
+    })))),sector_names)
+  }), c('No_Development','Develop_Mussel','Develop_Finfish','Develop_Kelp'))
+# Scale sector value n for each site i, by the domain-wide value that would be attained if the ideal development option to the sector was selected at site i, X_n_i_p (Supp. Info, Eq. S27)
+X_n_i_p <- setNames(lapply(1:p, df = V_n_i_p, FUN = function(p,df){
+      return(setNames(data.frame(t(do.call('rbind',lapply(1:length(sector_names), FUN = function(n){
+        df[[p]][,n] / max(sapply(df,"[", ,n),na.rm = T)
+      })))),sector_names))
+  }),c('No_Development','Develop_Mussel','Develop_Finfish','Develop_Kelp'))
+# Create the sector weights (alpha's)
+library(gtools)
+epsilon <- .20 # Epsilon step size, default is 0.20
+a_values <- seq(from = 0, to = 1, by = epsilon) # The unique values for each sector and site
+a <- permutations(n = length(a_values),7,a_values,repeats.allowed=T) # Matrix of unique alpha weights
+# Find the optimal policy option for each site in a given a 
+
+
+
+
+
 
 
 
@@ -258,14 +284,8 @@ V.D.DF <- New.Approach.DF(Di,T,'Disease')
 head(V.D.DF)
 # Combine Data into list
 library(gtools)
-a <- seq(from = 0, to = 1, by = epsilon)
-alpha.values <- function(a,r,repeats = T){
-  repeated.elements <- permutations(n = length(a),r = r,a,repeats.allowed=repeats)
-
-  return(repeated.elements)
-    # unique(apply(repeated.elements / apply(repeated.elements,MARGIN=1,FUN = max), MARGIN = 1, FUN = mean))
-}
-
+a_values <- seq(from = 0, to = 1, by = epsilon)
+a <- permutations(n = length(a_values),7,a_values,repeats.allowed=T)
 
 
 
