@@ -23,13 +23,13 @@ library(DDHFm)
 library(tiff)
 library(dplyr)
 
-plans <- read.csv(file='~/Desktop/Code/MSP Planning Results April 2016//Static_plans.csv',header=FALSE)[,I]
 values <- read.csv(file='~/Desktop/Code/MSP Planning Results April 2016/Dynamic_Values_Export.csv', header = FALSE)
 colnames(values)=c('Mussel','Finfish','Kelp','Halibut','Viewshed','Benthic','Disease')
-
-I<-which(values$Mussel>=.05&values$Finfish>=.05&values$Kelp>=.05&
+I <- which(values$Mussel>=.05&values$Finfish>=.05&values$Kelp>=.05&
                            values$Halibut>=.95&values$Viewshed>=.95&values$Benthic>=.95&
                            values$Disease>=.95)
+# Save a vector of the case study plans
+write.csv(I,file = file.path(paste0(getwd(),'/MSP_Model/Output/Data/Case_Study_Iteration_Numbers.csv')))
 plans <- read.csv(file='~/Desktop/Code/MSP Planning Results April 2016/Static_plans.csv',header=F)[,I]
 # Set global variables
 n.sector <- 7 # Number of sectors
