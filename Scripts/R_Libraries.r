@@ -1,4 +1,5 @@
 R_Libraries <- function(install_packs){
+	if(install_packs == T){install.packages('XML')}else{suppressMessages(require(XML))}
 	theurl <- "http://www.computerworld.com/article/2921176/business-intelligence/great-r-packages-for-data-import-wrangling-visualization.html"
 	tables <- readHTMLTable(theurl)
 	if(install_packs == T){
@@ -7,7 +8,6 @@ R_Libraries <- function(install_packs){
 		install.packages("colorout")
 	}
 	# for(index in 1:length(as.character(tables$cwsearchabletable$Package))){suppressMessages(require(as.character(tables$cwsearchabletable$Package[index]), character.only = T))}
-	suppressMessages(require(XML))
 	suppressMessages(require(RPostgreSQL))
 	suppressMessages(require(dplyr))
 	suppressMessages(require(plyr))

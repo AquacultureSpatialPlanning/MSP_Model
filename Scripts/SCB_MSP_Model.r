@@ -86,7 +86,6 @@ V_MK.V  <- (as.numeric(gsub(",", "", sector_data.df$res_views_3k)) + as.numeric(
 B.V <- rep(NA,times = length(F.V))
 B.V[F.V > 0] <- sector_data.df$TOC.flux[Aqua.Full.Domain.Logical][F.V > 0]
 
-
 # Run the eigenvector centrality diseaase model in MATLAB and then load the results.
 # Write a .mat file with the filtered connectivity matrix
 filename <- paste(tempfile(tmpdir = paste0(wkdir,'/MSP_Model/Input/Data/')),".mat",sep="")
@@ -160,16 +159,16 @@ a_tmp <- permutations(n = length(a_values),7,a_values,repeats.allowed=T) # Matri
 a <- cbind(a_tmp[,1:5],a_tmp[,5],a_tmp[,6:7]) # Do not do this if truely only 7 sectors are used, i.e. viewshed maximum across both sets is used vs. how it is currently where they are handled seperately
 # Find the optimal policy option for each site in a given, alpha
 print('Finding optimal solutions.................')
-print_a <- seq(from = 1, to = nrow(a), by = 1000)
-obj_i <- lapply(1:nrow(a), FUN = function(x){
+print_a <- seq(from = 0, to = nrow(a), by = 10000)
+obj_i <- sapply(1:nrow(a), FUN = function(x){
   if(x %in% print_a){print(paste0(x,' iterations'))}
   apply(sapply(1:p, df = X_n_i_p, FUN = function(y,df){
     apply(data.frame(mapply('*',df[[y]],c(a[x,]),SIMPLIFY = FALSE)), MARGIN = 1, FUN = function(z) sum(z,na.rm = T)) # Multiply each i for a given p by the sector specific weight set by a given row of the alpha matrix
     }),MARGIN = 1, which.max) - 1
 })
-
-
-
+# # Save model results
+# write.csv(x = obj_i.df,file = file.path(paste0(wkdir,'/MSP_Model/Output/Data/MSP_Planning_Results.csv')))
+obj_i <- read.csv(file.path('~/MSP_Model/Output/Data/MSP_Planning_Results.csv'))
 #
 #
 #
