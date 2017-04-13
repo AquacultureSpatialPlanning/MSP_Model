@@ -88,7 +88,7 @@ B.V[F.V > 0] <- sector_data.df$TOC.flux[Aqua.Full.Domain.Logical][F.V > 0]
 
 # Run the eigenvector centrality diseaase model in MATLAB and then load the results.
 # Write a .mat file with the filtered connectivity matrix
-filename <- paste(tempfile(tmpdir = paste0(wkdir,'/MSP_Model/Input/Data/')),".mat",sep="")
+filename <- paste(tempfile(tmpdir = paste0(wkdir,'/MSP_Model/Input/Data')),".mat",sep="")
 writeMat(filename,
 eig = readMat(paste0(wkdir,
   '/MSP_Model/Input/Data/disease_connect_matrix.mat'))$disease.connect.matrix[F$Annuity > 0,F$Annuity > 0])
@@ -100,7 +100,7 @@ run_matlab_code(code)
 # Read the Mat file and remove the temporary one
 D.V <- rep(NA,times = length(F.V))
 D.V[F.V > 0] <- readMat(paste0(wkdir,'/MSP_Model/Scripts/tmp.mat'))$d
-system2('rm',args = paste0(wkdir,'/MSP_Model/Scripts/tmp.mat'))
+system2('rm',args = paste0(wkdir,filename))
 # Save all of the raw outputs of each sector model in a seperate file --> do later
 print('Raw Impacts/Value.....')
 Raw_Impacts <- data.frame(Mussel = M.V, Finfish = F.V, Kelp = K.V, Halibut = H.V,
@@ -167,7 +167,7 @@ obj_i <- sapply(1:nrow(a), FUN = function(x){
     }),MARGIN = 1, which.max) - 1
 })
 # # Save model results
-write.csv(x = obj_i,file = file.path(paste0(wkdir,'/MSP_Model/Output/Data/MSP_Planning_Results.csv')))
+write.csv(x = obj_i,file = file.path(paste0(wkdir,'/MSP_Model/Output/Data/MSP_Planning_Results.csv')), quote = FALSE, col.names = FALSE)
 # obj_i <- read.csv(file.path('~/MSP_Model/Output/Data/MSP_Planning_Results.csv'))
 #
 #
