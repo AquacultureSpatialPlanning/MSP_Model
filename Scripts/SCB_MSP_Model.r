@@ -5,7 +5,7 @@ wkdir <- getwd()
 # install all of the necessary libraries and load them into the
 # current workspace.
 source(paste0(wkdir,'/MSP_Model/Scripts','/R_Libraries.r'))
-R_Libraries(FALSE) # After the first initial run this can be set to F
+R_Libraries(TRUE) # After the first initial run this can be set to F
 # Set global variables
 n.sector <- 7 # Number of sectors
 epsilon <- 0.2 # Stepsize of sector weights
@@ -170,6 +170,15 @@ obj_i <- sapply(1:nrow(a), FUN = function(x){
 # write.csv(x = data.frame(obj_i,stringsAsFactors = F),file = file.path(paste0(wkdir,'/MSP_Model/Output/Data/MSP_Planning_Results.csv')), quote = FALSE, col.names = F)
 write.table(x = data.frame(obj_i,stringsAsFactors = F),file = file.path(paste0(wkdir,'/MSP_Model/Output/Data/MSP_Planning_Results.csv')), sep = ",",quote = FALSE, col.names = FALSE, row.names = FALSE)
 # obj_i <- read.csv(file.path('~/MSP_Model/Output/Data/MSP_Planning_Results.csv'))
+## Run Crow Code Version and compare results
+setwd(paste0(wkdir,'/MSP_Model/Scripts/CrowT0v1'))
+system2('/Applications/MATLAB_R2016b.app/bin/matlab',
+  args = c('-nodesktop','-noFigureWindows','-nosplash','-r',
+  "run\\(\\'~/MSP_Model/Scripts/CrowT0v1/TOA_AquaMSP_CrowCode_v1NaN.m\\'\\)"))
+setwd(paste0(wkdir,'/MSP_Model/'))
+
+
+
 #
 #
 #
