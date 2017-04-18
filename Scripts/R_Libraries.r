@@ -5,6 +5,7 @@ R_Libraries <- function(install_packs){
 	if(install_packs == T){
 		install.packages(as.character(tables$cwsearchabletable$Package), repos = 'https://cran.mtu.edu/')
 		devtools::install_github("muschellij2/matlabr")
+		install.packages('R.matlab',repos = 'https://cran.mtu.edu/')
 		install.packages("colorout")
 	}
 	# for(index in 1:length(as.character(tables$cwsearchabletable$Package))){suppressMessages(require(as.character(tables$cwsearchabletable$Package[index]), character.only = T))}
@@ -44,6 +45,5 @@ R_Libraries <- function(install_packs){
 	# suppressMessages(require(devtool))
 	suppressMessages(require(matlabr))
 	suppressMessages(require(colorout))
-	suppressMessages(require(matlabr))
 	options(matlab.path = "/Applications/MATLAB_R2016b.app/bin")
 }
