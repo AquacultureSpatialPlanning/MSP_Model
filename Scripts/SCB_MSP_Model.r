@@ -79,7 +79,7 @@ if(readline("Run halibut model or load results Y/N? ") == 'Y'){
     "run\\(\\'~/MSP_Model/Scripts/Halibut/Tuner_free_params_v4.m\\'\\)"))
   # run_matlab_script(paste0(wkdir,'/MSP_Model/Scripts/Halibut/Tuner_free_params_v4.m'))
 }
-H.V  <- read.csv(paste0(wkdir,'/MSP_Model/Output/Data/Target_FID_and_Yi_fulldomain_NPV_at_MSY_noAqua.csv'),header=FALSE)[,2][Aqua.Full.Domain.Logical]
+H.V  <- (r*read.csv(paste0(wkdir,'/MSP_Model/Output/Data/Target_FID_and_Yi_fulldomain_NPV_at_MSY_noAqua.csv'),header=FALSE)[,2][Aqua.Full.Domain.Logical])/(1-((1+r)^-t))
 
 # Load Viewshed Data
 V_F.V <- (as.numeric(gsub(",", "", sector_data.df$res_views_8k)) + as.numeric(gsub(",", "",sector_data.df$park_views_8k)))[Aqua.Full.Domain.Logical]
@@ -176,9 +176,9 @@ obj_i <- sapply(1:nrow(a), FUN = function(x){
 # obj_i <- read.csv(file.path('~/MSP_Model/Output/Data/MSP_Planning_Results.csv'))
 ## Run Crow Code Version and compare results
 # setwd(paste0(wkdir,'/MSP_Model/Scripts/CrowT0v1'))
-# system2('/Applications/MATLAB_R2016b.app/bin/matlab',
-#   args = c('-nodesktop','-noFigureWindows','-nosplash','-r',
-#   "run\\(\\'~/MSP_Model/Scripts/CrowT0v1/TOA_AquaMSP_CrowCode_v1NaN.m\\'\\)"))
+system2('/Applications/MATLAB_R2016b.app/bin/matlab',
+  args = c('-nodesktop','-noFigureWindows','-nosplash','-r',
+  "run\\(\\'~/MSP_Model/Scripts/CrowT0v1/TOA_AquaMSP_CrowCode_v1NaN.m\\'\\)"))
 # setwd(paste0(wkdir,'/MSP_Model/'))
 ## Load Crow Results
 CrowT0v1.mat <- readMat('~/MSP_Model/Scripts/CrowT0v1/TOA_data.mat')
