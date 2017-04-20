@@ -14,12 +14,22 @@ tic %start timer
 %load sector response data
 % M = xlsread('Raw_Patch_Data.csv',2);
 % cd('~/MSP_Model/Scripts/CrowTOv1/')
-NUM1 = csvread('Raw_Patch_Data.csv',1);
+% NUM1 = csvread('Raw_Patch_Data.csv',1);
 
 %Parameters
 N=7; %number of sectors
 I=1061; %number of sites
 P=4; %number of policies
+
+% Load Data From JS
+load('~/MSP_Model/Input/Data/Raw_Impacts.mat')
+who
+names = fieldnames(Raw_Impacts(1));
+NUM1 = NaN(I,length(names));
+for i = 1:length(fieldnames(Raw_Impacts))
+  disp(names(i))
+  NUM1(:,i) = getfield(Raw_Impacts(1),names{i});
+end
 
 %Calculate sector response in each patch to each policy
 shell=zeros(I,N);
@@ -29,17 +39,17 @@ R_n_i_p1(:,4)=NUM1(:,4); %H full value
 %Mussel development (p=2)
 R_n_i_p2=shell; %F, K, H, B and D zero (no value or no impact)
 R_n_i_p2(:,1)=NUM1(:,1); %M full value
-R_n_i_p2(:,5)=NUM1(:,6); %V partial impact
+R_n_i_p2(:,5)=NUM1(:,5); %V partial impact
 %Finfish development (p=3)
 R_n_i_p3=shell; %M, K, and H zero (no value)
 R_n_i_p3(:,2)=NUM1(:,2); %F full value
-R_n_i_p3(:,5)=NUM1(:,5); %V full impact
+R_n_i_p3(:,5)=NUM1(:,6); %V full impact
 R_n_i_p3(:,6)=NUM1(:,7); %B full impact
 R_n_i_p3(:,7)=NUM1(:,8); %D full impact
 %Kelp development (p=4)
 R_n_i_p4=shell; %M, F, H, B and D zero (no value or no impact)
 R_n_i_p4(:,3)=NUM1(:,3); %K full value
-R_n_i_p4(:,5)=NUM1(:,6); %V partial impact
+R_n_i_p4(:,5)=NUM1(:,5); %V partial impact
 
 %Create master matrix
 R_n_i_p=NaN(I,N,P);
