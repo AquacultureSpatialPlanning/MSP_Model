@@ -6,6 +6,9 @@ wkdir <- getwd()
 # current workspace.
 source(paste0(wkdir,'/MSP_Model/Scripts','/R_Libraries.r'))
 R_Libraries(FALSE) # After the first initial run this can be set to F
+# Install R markdown
+install.packages("knitr",repos = 'https://cran.mtu.edu/')
+library(knitr)
 # Set global variables
 n.sector <- 7 # Number of sectors
 epsilon <- 0.2 # Stepsize of sector weights
@@ -106,7 +109,8 @@ print('Raw Impacts/Value.....')
 Raw_Impacts <- data.frame(Mussel = M.V, Finfish = F.V, Kelp = K.V, Halibut = H.V,
   Viewshed_Mussel_Kelp = V_MK.V, Viewshed_Finfish = V_F.V, Benthic_Impacts = B.V,
   Disease_Risk = D.V) %>% glimpse()
-
+# Make a .mat file of the sector files
+writeMat('~/MSP_Model/Input/Data/Raw_Impacts.mat',Raw_Impacts = Raw_Impacts)
 ## Tradeoff Model
 # Define parameters for the model
 sector_names <- names(Raw_Impacts)
@@ -168,8 +172,19 @@ obj_i <- sapply(1:nrow(a), FUN = function(x){
 })
 # # Save model results
 # write.csv(x = data.frame(obj_i,stringsAsFactors = F),file = file.path(paste0(wkdir,'/MSP_Model/Output/Data/MSP_Planning_Results.csv')), quote = FALSE, col.names = F)
-write.table(x = data.frame(obj_i,stringsAsFactors = F),file = file.path(paste0(wkdir,'/MSP_Model/Output/Data/MSP_Planning_Results.csv')), sep = ",",quote = FALSE, col.names = FALSE, row.names = FALSE)
+# write.table(x = data.frame(obj_i,stringsAsFactors = F),file = file.path(paste0(wkdir,'/MSP_Model/Output/Data/MSP_Planning_Results.csv')), sep = ",",quote = FALSE, col.names = FALSE, row.names = FALSE)
 # obj_i <- read.csv(file.path('~/MSP_Model/Output/Data/MSP_Planning_Results.csv'))
+## Run Crow Code Version and compare results
+# setwd(paste0(wkdir,'/MSP_Model/Scripts/CrowT0v1'))
+# system2('/Applications/MATLAB_R2016b.app/bin/matlab',
+#   args = c('-nodesktop','-noFigureWindows','-nosplash','-r',
+#   "run\\(\\'~/MSP_Model/Scripts/CrowT0v1/TOA_AquaMSP_CrowCode_v1NaN.m\\'\\)"))
+# setwd(paste0(wkdir,'/MSP_Model/'))
+## Load Crow Results
+CrowT0v1.mat <- readMat('~/MSP_Model/Scripts/CrowT0v1/TOA_data.mat')
+
+
+
 #
 #
 #
