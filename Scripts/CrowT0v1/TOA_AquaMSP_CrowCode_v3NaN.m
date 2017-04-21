@@ -6,25 +6,25 @@ tic %start timer
 % R=response (value or impact)
 % V=value (positive numbers are beneficial to sector)
 % X=scaled value (unitless, ranging 0-1, and sum to 1)
-% 
+%
 % n=sector (order: M, F, K, H, V, B, D)
 % i=sites
 % p=policy
 
 %% load sector response data
 % [NUM1,TXT1,RAW1]=xlsread('Raw_Patch_Data.csv'); %Joel says this data is rounded and thus INCORRECT
-% 1 Mussel	
-% 2 Finfish	
-% 3 Kelp 	
-% 4 Halibut 	
-% 5 Views_Finfish	
-% 6 Views_Mussel_Kelp 	
-% 7 Benthic 	
-% 8 Disease 
+% 1 Mussel
+% 2 Finfish
+% 3 Kelp
+% 4 Halibut
+% 5 Views_Finfish
+% 6 Views_Mussel_Kelp
+% 7 Benthic
+% 8 Disease
 
 %INSTEAD, use .mat file provided by Joel:
-load('Raw_Impacts')
-% Raw_Impacts = 
+load('~/MSP_Model/Scripts/CrowT0v1/Raw_Impacts.mat')
+% Raw_Impacts =
 %  1                 Mussel: [1061x1 double]
 %  2                Finfish: [1061x1 double]
 %  3                   Kelp: [1061x1 double]
@@ -38,7 +38,7 @@ A = struct2cell(Raw_Impacts);
 %Note, NaN's already inserted for B and D (in 669 cells each)
 %Note, order of V_M_K and V_F is reversed compared with Raw_Patch_Data.csv,
 %so I changed the indexing in the below Response calculations
-Raw_Impacts_double = cat(2,A{:}); 
+Raw_Impacts_double = cat(2,A{:});
 NUM1=Raw_Impacts_double; %for use in below analysis
 
 %% Parameters
@@ -94,7 +94,7 @@ end
 tmp=nanmax(R_n_i_p,[],3); %first max across policies
 R_bar_n=nanmax(tmp,[],1); %then max across sites
 
-%Calculate values 
+%Calculate values
 V_n_i_p=NaN(I,N,P);
 for n=1:N %for each sector
     for p=1:P %for each policy
@@ -108,7 +108,7 @@ end
 
 %Calculate unitless values
 max_p_V_n_i_p=nanmax(V_n_i_p,[],3); %for each sector and site, the policy with the max value
-sum_i_max_p_V_n_i_p=nansum(max_p_V_n_i_p,1); %sum of the above max values 
+sum_i_max_p_V_n_i_p=nansum(max_p_V_n_i_p,1); %sum of the above max values
 X_n_i_p=NaN(I,N,P);
 for n=1:N %for each sector
     for p=1:P %for each policy
@@ -192,7 +192,3 @@ hist(X_n_i_p(:))
 xlabel('Sector unitless values')
 ylabel('Count')
 title('All sites, all policies')
-
-
-    
-

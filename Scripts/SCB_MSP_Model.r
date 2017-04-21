@@ -162,27 +162,22 @@ a_values <- seq(from = 0, to = 1, by = epsilon) # The unique values for each sec
 a_tmp <- permutations(n = length(a_values),7,a_values,repeats.allowed=T) # Matrix of unique alpha weights
 a <- cbind(a_tmp[,1:5],a_tmp[,5],a_tmp[,6:7]) # Do not do this if truely only 7 sectors are used, i.e. viewshed maximum across both sets is used vs. how it is currently where they are handled seperately
 # Find the optimal policy option for each site in a given, alpha
-print('Finding optimal solutions.................')
-print_a <- seq(from = 0, to = nrow(a), by = 10000)
-obj_i <- sapply(1:nrow(a), FUN = function(x){
-  if(x %in% print_a){print(paste0(x,' iterations'))}
-  apply(sapply(1:p, df = X_n_i_p, FUN = function(y,df){
-    apply(data.frame(mapply('*',df[[y]],c(a[x,]),SIMPLIFY = FALSE)), MARGIN = 1, FUN = function(z) sum(z,na.rm = T)) # Multiply each i for a given p by the sector specific weight set by a given row of the alpha matrix
-    }),MARGIN = 1, which.max) - 1
-})
-# # Save model results
-# write.csv(x = data.frame(obj_i,stringsAsFactors = F),file = file.path(paste0(wkdir,'/MSP_Model/Output/Data/MSP_Planning_Results.csv')), quote = FALSE, col.names = F)
-write.table(x = data.frame(obj_i,stringsAsFactors = F),file = file.path(paste0(wkdir,'/MSP_Model/Output/Data/MSP_Planning_Results.csv')), sep = ",",quote = FALSE, col.names = FALSE, row.names = FALSE)
-# obj_i <- read.csv(file.path('~/MSP_Model/Output/Data/MSP_Planning_Results.csv'))
-## Run Crow Code Version and compare results
-# setwd(paste0(wkdir,'/MSP_Model/Scripts/CrowT0v1'))
-system2('/Applications/MATLAB_R2016b.app/bin/matlab',
-  args = c('-nodesktop','-noFigureWindows','-nosplash','-r',
-  "run\\(\\'~/MSP_Model/Scripts/CrowT0v1/TOA_AquaMSP_CrowCode_v1NaN.m\\'\\)"))
-# setwd(paste0(wkdir,'/MSP_Model/'))
-## Load Crow Results
-CrowT0v1.mat <- readMat('~/MSP_Model/Scripts/CrowT0v1/TOA_data.mat')
-setNames(data.frame(do.call('cbind',CrowT0v1.mat$Raw.Impacts)),names(Raw_Impacts)) %>% glimpse()
+if(readline('Perform Full Analysis? Y/N ') == 'Y')){
+  print('Finding optimal solutions.................')
+  print_a <- seq(from = 0, to = nrow(a), by = 10000)
+  obj_i <- sapply(1:nrow(a), FUN = function(x){
+    if(x %in% print_a){print(paste0(x,' iterations'))}
+    apply(sapply(1:p, df = X_n_i_p, FUN = function(y,df){
+      apply(data.frame(mapply('*',df[[y]],c(a[x,]),SIMPLIFY = FALSE)), MARGIN = 1, FUN = function(z) sum(z,na.rm = T)) # Multiply each i for a given p by the sector specific weight set by a given row of the alpha matrix
+      }),MARGIN = 1, which.max) - 1
+  })
+  # # Save model results
+  write.table(x = data.frame(obj_i,stringsAsFactors = F),file = file.path(paste0(wkdir,'/MSP_Model/Output/Data/MSP_Planning_Results.csv')), sep = ",",quote = FALSE, col.names = FALSE, row.names = FALSE)
+}else{
+  print('loading planning results')
+  obj_i <- read.csv(file.path('~/MSP_Model/Output/Data/MSP_Planning_Results.csv'))
+}
+source('~/MSP_Model/Scripts/Model_QA.r')
 
 
 #
