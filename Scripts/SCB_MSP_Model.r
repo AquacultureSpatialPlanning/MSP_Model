@@ -172,7 +172,7 @@ obj_i <- sapply(1:nrow(a), FUN = function(x){
 })
 # # Save model results
 # write.csv(x = data.frame(obj_i,stringsAsFactors = F),file = file.path(paste0(wkdir,'/MSP_Model/Output/Data/MSP_Planning_Results.csv')), quote = FALSE, col.names = F)
-# write.table(x = data.frame(obj_i,stringsAsFactors = F),file = file.path(paste0(wkdir,'/MSP_Model/Output/Data/MSP_Planning_Results.csv')), sep = ",",quote = FALSE, col.names = FALSE, row.names = FALSE)
+write.table(x = data.frame(obj_i,stringsAsFactors = F),file = file.path(paste0(wkdir,'/MSP_Model/Output/Data/MSP_Planning_Results.csv')), sep = ",",quote = FALSE, col.names = FALSE, row.names = FALSE)
 # obj_i <- read.csv(file.path('~/MSP_Model/Output/Data/MSP_Planning_Results.csv'))
 ## Run Crow Code Version and compare results
 # setwd(paste0(wkdir,'/MSP_Model/Scripts/CrowT0v1'))
@@ -182,7 +182,7 @@ system2('/Applications/MATLAB_R2016b.app/bin/matlab',
 # setwd(paste0(wkdir,'/MSP_Model/'))
 ## Load Crow Results
 CrowT0v1.mat <- readMat('~/MSP_Model/Scripts/CrowT0v1/TOA_data.mat')
-
+setNames(data.frame(do.call('cbind',CrowT0v1.mat$Raw.Impacts)),names(Raw_Impacts)) %>% glimpse()
 
 
 #
