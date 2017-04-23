@@ -171,8 +171,22 @@ if(readline('Perform Full Analysis? Y/N ') == 'Y')){
       apply(data.frame(mapply('*',df[[y]],c(a[x,]),SIMPLIFY = FALSE)), MARGIN = 1, FUN = function(z) sum(z,na.rm = T)) # Multiply each i for a given p by the sector specific weight set by a given row of the alpha matrix
       }),MARGIN = 1, which.max) - 1
   })
+  x = 55988
+  y = 1
+  sapply(55988, FUN = function(x){
+    if(x %in% print_a){print(paste0(x,' iterations'))}
+    apply(sapply(1:p, df = lapply(X_n_i_p, "[",i.test,), FUN = function(y,df){
+      apply(data.frame(mapply('*',df[[y]],c(a[x,]),SIMPLIFY = FALSE)), MARGIN = 1, FUN = function(z) sum(z,na.rm = T)) # Multiply each i for a given p by the sector specific weight set by a given row of the alpha matrix
+      }),MARGIN = 1, which.max) - 1
+  })
   # # Save model results
   write.table(x = data.frame(obj_i,stringsAsFactors = F),file = file.path(paste0(wkdir,'/MSP_Model/Output/Data/MSP_Planning_Results.csv')), sep = ",",quote = FALSE, col.names = FALSE, row.names = FALSE)
+  ## Turn primary variables into a list
+  JS_MSP.list <- setNames(list(Raw_Impacts,R_n_i_p,R_bar_n,V_n_i_p,X_n_i_p,a),c('Raw_Impacts','R_n_i_p','R_bar_n','V_n_i_p','X_n_i_p','a'))
+  # Save primary variables to load into R
+  save(JS_MSP.list,file = '~/MSP_Model/Output/Data/JS_MSP_Output.Rdata')
+  # Save primary variables to load into Matlab
+  writeMat('~/MSP_Model/Output/Data/JS_MSP_Output.mat',Raw_Impacts = Raw_Impacts, R_n_i_p = R_n_i_p, R_bar_n = R_bar_n, V_n_i_p = V_n_i_p, X_n_i_p = X_n_i_p, a = a)
 }else{
   print('loading planning results')
   obj_i <- read.csv(file.path('~/MSP_Model/Output/Data/MSP_Planning_Results.csv'))
