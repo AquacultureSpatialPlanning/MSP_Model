@@ -122,7 +122,7 @@ p_options <- list(c('Halibut'),c('Mussel','Viewshed_Mussel_Kelp'),c('Finfish','V
 # Make a list of dataframes consiting of the responses for each policy p for each sector n at each site i
 R_n_i_p <- setNames(lapply(1:p,df = Raw_Impacts,FUN = function(x,df){
       # Make the dataframe for each policy
-      setNames(data.frame(t(do.call('rbind',lapply(1:length(sector_names), FUN = function(y){
+      tmp <- setNames(data.frame(t(do.call('rbind',lapply(1:length(sector_names), FUN = function(y){
         if(sector_names[y] %in% p_options[[x]]){
           return(df[[y]])
         }else{
@@ -131,6 +131,15 @@ R_n_i_p <- setNames(lapply(1:p,df = Raw_Impacts,FUN = function(x,df){
           return(df[[y]])
         }
         })))),sector_names)
+      if('Viewshed_Mussel_Kelp' %in% p_options[[x]]){
+        return(select(tmp,-Viewshed_Finfish))
+      }else if('Viewshed_Finfish' %in% p_options[[x]]){
+        return(select(tmp,-Viewshed_Mussel_Kelp))
+      }else{
+        return(tmp %>% select(-Viewshed_Mussel_Kelp, -Viewshed_Finfish) %>%
+          mutate(Viewshed = apply(select(df,contains('Viewshed_')), MARGIN = 1, FUN = max)) %>%
+          select(Mussel,Finfish,Kelp,Halibut,Viewshed,Benthic_Impacts,Disease_Risk))
+      }
     }),c('No_Development','Develop_Mussel','Develop_Finfish','Develop_Kelp'))
 # For sectors whose response is negative, calculate R_bar
 R_negative_sector_names <- sector_names[grepl(c('Viewshed_|Benthic_|Disease_'),sector_names)]
@@ -141,13 +150,13 @@ R_bar_n <- setNames(data.frame(t(do.call('rbind',lapply(1:length(R_negative_sect
     })))),R_negative_sector_names)
 # Then calculate V_n_i_p based on the response of each sector (Supp. Info, Eq. S26)
 V_n_i_p <- setNames(lapply(1:p, df = R_n_i_p, df_bar = R_bar_n, FUN = function(x, df, df_bar){
-  setNames(data.frame(t(do.call('rbind',lapply(1:length(sector_names), FUN = function(y){
+  setNames(data.frame(t(do.call('rbind',lapply(1:length(names(R_n_i_p[[x]])), FUN = function(y){
     if(names(df[[x]])[y] %in% R_negative_sector_names){
       return(R_bar_n[[names(df[[x]])[y]]] - df[[x]][,y])
     }else{
       return(df[[x]][,y])
     }
-    })))),sector_names)
+    })))),names(R_n_i_p[[x]]))
   }), c('No_Development','Develop_Mussel','Develop_Finfish','Develop_Kelp'))
 # Scale sector value n for each site i, by the domain-wide value that would be attained if the ideal development option to the sector was selected at site i, X_n_i_p (Supp. Info, Eq. S27)
 X_n_i_p <- setNames(lapply(1:p, df = V_n_i_p, FUN = function(p,df){
