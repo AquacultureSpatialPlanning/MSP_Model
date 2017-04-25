@@ -131,15 +131,6 @@ R_n_i_p <- setNames(lapply(1:p,df = Raw_Impacts,FUN = function(x,df){
           return(df[[y]])
         }
         })))),sector_names)
-      if('Viewshed_Mussel_Kelp' %in% p_options[[x]]){
-        return(select(tmp,-Viewshed_Finfish))
-      }else if('Viewshed_Finfish' %in% p_options[[x]]){
-        return(select(tmp,-Viewshed_Mussel_Kelp))
-      }else{
-        return(tmp %>% select(-Viewshed_Mussel_Kelp, -Viewshed_Finfish) %>%
-          mutate(Viewshed = apply(select(df,contains('Viewshed_')), MARGIN = 1, FUN = max)) %>%
-          select(Mussel,Finfish,Kelp,Halibut,Viewshed,Benthic_Impacts,Disease_Risk))
-      }
     }),c('No_Development','Develop_Mussel','Develop_Finfish','Develop_Kelp'))
 # For sectors whose response is negative, calculate R_bar
 R_negative_sector_names <- sector_names[grepl(c('Viewshed_|Benthic_|Disease_'),sector_names)]
@@ -161,9 +152,19 @@ V_n_i_p <- setNames(lapply(1:p, df = R_n_i_p, df_bar = R_bar_n, FUN = function(x
 # Scale sector value n for each site i, by the domain-wide value that would be attained if the ideal development option to the sector was selected at site i, X_n_i_p (Supp. Info, Eq. S27)
 X_n_i_p <- setNames(lapply(1:p, df = V_n_i_p, FUN = function(p,df){
       return(setNames(data.frame(t(do.call('rbind',lapply(1:length(sector_names), FUN = function(n){
-        df[[p]][,n] / sum(apply(sapply(df,"[", ,n),MARGIN = 1, FUN = function(z){ifelse(!all(is.na(z)),max(z, na.rm = T),NA)}),na.rm = T)
+        if((p == 2 | p == 4) & sector_names[n] == 'Viewshed_Finfish'){
+          return(rep(0,times = i))
+        }else if((p == 3 | p == 1) & sector_names[n] == 'Viewshed_Mussel_Kelp'){
+          return(rep(0,times = i))
+        }else{
+          return(df[[p]][,n] / sum(apply(sapply(df,"[", ,n),MARGIN = 1, FUN = function(z){ifelse(!all(is.na(z)),max(z, na.rm = T),NA)}),na.rm = T))
+        }
       })))),sector_names))
   }),c('No_Development','Develop_Mussel','Develop_Finfish','Develop_Kelp'))
+  # X_n_i_p <- setNames(lapply(1:p, df = V_n_i_p, FUN = function(p,df){
+  #       return(setNames(data.frame(t(do.call('rbind',lapply(1:length(sector_names), FUN = function(n){
+  #
+  #   }),c('No_Development','Develop_Mussel','Develop_Finfish','Develop_Kelp'))
 # Create the sector weights (alpha's)
 library(gtools)
 epsilon <- .20 # Epsilon step size, default is 0.20
