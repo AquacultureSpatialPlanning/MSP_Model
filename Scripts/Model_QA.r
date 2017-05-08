@@ -60,7 +60,7 @@ print(str(R_n_i_p.CW))
 X_n_i_p.JS <- unname(sapply(JS_MSP.list[['V_n_i_p']],"[", i.test, ))
 row.names(X_n_i_p.JS) <- c();
 print(X_n_i_p.JS)
-X_n_i_p.CW <- CW_Variables[['V.n.i.p']][i.test, ,]
+X_n_i_p.CW <- CW_Variables[['X.n.i.p']][i.test, ,]
 print(X_n_i_p.CW)
 # Test 1 compare Alpha sets
 # Because of this, columns 5 and 6 in JS a-matrix are identical to one another. These need to therefore be removed in order to do an accurate comparison.
@@ -70,9 +70,9 @@ print(paste('JS alpha matrix = ',dim(a.JS)))
 a.CW <- CW_Variables[['aMatrix']]
 print(paste('CW alpha matrix = ',dim(a.CW)))
 # Take the absolute difference between the two
-apply(a.JS,MARGIN = 1,FUN = function(x){as.character((factor(x)})
-apply(a.CW,MARGIN = 1,FUN = sum)
-as.character(factor(a.JS))
+# apply(a.JS,MARGIN = 1,FUN = function(x){as.character((factor(x)})))
+# apply(a.CW,MARGIN = 1,FUN = sum)
+# as.character(factor(a.JS))
 # Take the
 # Test 1 Compare Raw_Impacts, i.e. the sector inputs to the two versions
 Raw_Impacts.CW <- CW_Variables[['NUM1']]

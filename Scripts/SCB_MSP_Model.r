@@ -114,7 +114,7 @@ writeMat('~/MSP_Model/Input/Data/Raw_Impacts.mat',Raw_Impacts = Raw_Impacts)
 ## Tradeoff Model
 # Define parameters for the model
 sector_names <- names(Raw_Impacts)
-n <- 8 # Number of sectors
+n <- 7 # Number of sectors
 i <- 1061 # Number of sites, nrow(Raw_Impacts)
 p <- 4 # Number of management options, 0 = no development, 1 = develop mussel, 2 = develop finfish, 3 = develop kelp, 4 = no development
 # Using the definied parameters derive variable V_n_i_p (value to sector n at site i for pursuing development option p)
@@ -132,8 +132,20 @@ R_n_i_p <- setNames(lapply(1:p,df = Raw_Impacts,FUN = function(x,df){
         }
         })))),sector_names)
     }),c('No_Development','Develop_Mussel','Develop_Finfish','Develop_Kelp'))
+R_n_i_p[[1]] <- R_n_i_p[[1]] %>%
+  mutate(Viewshed = apply(R_n_i_p[[1]],MARGIN = 1,FUN = max,na.rm = T)) %>%
+  select(-Viewshed_Finfish,-Viewshed_Mussel_Kelp) %>% select(Mussel,Finfish,Kelp,Halibut,Viewshed,Benthic_Impacts,Disease_Risk)
+R_n_i_p[[2]] <- R_n_i_p[[2]] %>%
+  mutate(Viewshed = Viewshed_Mussel_Kelp) %>%
+  select(-Viewshed_Finfish,-Viewshed_Mussel_Kelp) %>% select(Mussel,Finfish,Kelp,Halibut,Viewshed,Benthic_Impacts,Disease_Risk)
+R_n_i_p[[3]] <- R_n_i_p[[3]] %>%
+  mutate(Viewshed = Viewshed_Finfish) %>%
+  select(-Viewshed_Finfish,-Viewshed_Mussel_Kelp) %>% select(Mussel,Finfish,Kelp,Halibut,Viewshed,Benthic_Impacts,Disease_Risk)
+R_n_i_p[[4]] <- R_n_i_p[[4]] %>%
+  mutate(Viewshed = Viewshed_Mussel_Kelp) %>%
+  select(-Viewshed_Finfish,-Viewshed_Mussel_Kelp) %>% select(Mussel,Finfish,Kelp,Halibut,Viewshed,Benthic_Impacts,Disease_Risk)
 # For sectors whose response is negative, calculate R_bar
-R_negative_sector_names <- sector_names[grepl(c('Viewshed_|Benthic_|Disease_'),sector_names)]
+R_negative_sector_names <- names(R_n_i_p[[1]])[grepl(c('Viewshed|Benthic_|Disease_'),names(R_n_i_p[[1]]))]
 R_bar_n <- setNames(data.frame(t(do.call('rbind',lapply(1:length(R_negative_sector_names), data = lapply(R_n_i_p, R_negative_sector_names, FUN = function(x,y){
   apply(x[names(x) %in% R_negative_sector_names],MARGIN = 2, FUN = function(x) max(x,na.rm = T))
   }),FUN = function(x,data){
@@ -157,7 +169,11 @@ X_n_i_p <- setNames(lapply(1:p, df = V_n_i_p, FUN = function(p,df){
         }else if((p == 3 | p == 1) & sector_names[n] == 'Viewshed_Mussel_Kelp'){
           return(rep(0,times = i))
         }else{
-          return(df[[p]][,n] / sum(apply(sapply(df,"[", ,n),MARGIN = 1, FUN = function(z){ifelse(!all(is.na(z)),max(z, na.rm = T),NA)}),na.rm = T))
+          if(p == 1 & sector_names[n] == 'Viewshed_Finfish'){
+            return(apply(df[[p]][,c(5,6)],MARGIN = 1, FUN = max,na.rm = T) / sum(apply(data.frame(apply(df[[p]][,c(5,6)],MARGIN = 1, FUN = max,na.rm = T)),MARGIN = 1, FUN = function(z){ifelse(!all(is.na(z)),max(z, na.rm = T),NA)}),na.rm = T))
+          }else{
+            return(df[[p]][,n] / sum(apply(sapply(df,"[", ,n),MARGIN = 1, FUN = function(z){ifelse(!all(is.na(z)),max(z, na.rm = T),NA)}),na.rm = T))
+          }
         }
       })))),sector_names))
   }),c('No_Development','Develop_Mussel','Develop_Finfish','Develop_Kelp'))
@@ -169,10 +185,11 @@ X_n_i_p <- setNames(lapply(1:p, df = V_n_i_p, FUN = function(p,df){
 library(gtools)
 epsilon <- .20 # Epsilon step size, default is 0.20
 a_values <- seq(from = 0, to = 1, by = epsilon) # The unique values for each sector and site
-a_tmp <- permutations(n = length(a_values),7,a_values,repeats.allowed=T) # Matrix of unique alpha weights
-a <- cbind(a_tmp[,1:5],a_tmp[,5],a_tmp[,6:7]) # Do not do this if truely only 7 sectors are used, i.e. viewshed maximum across both sets is used vs. how it is currently where they are handled seperately
+# a_tmp <- permutations(n = length(a_values),7,a_values,repeats.allowed=T) # Matrix of unique alpha weights
+# a <- cbind(a_tmp[,1:5],a_tmp[,5],a_tmp[,6:7]) # Do not do this if truely only 7 sectors are used, i.e. viewshed maximum across both sets is used vs. how it is currently where they are handled seperately
+a <- permutations(n = length(a_values),7,a_values,repeats.allowed=T)
 # Find the optimal policy option for each site in a given, alpha
-if(readline('Perform Full Analysis? Y/N ') == 'Y')){
+if(readline('Perform Full Analysis? Y/N ') == 'Y'){
   print('Finding optimal solutions.................')
   print_a <- seq(from = 0, to = nrow(a), by = 10000)
   obj_i <- sapply(1:nrow(a), FUN = function(x){
@@ -181,14 +198,14 @@ if(readline('Perform Full Analysis? Y/N ') == 'Y')){
       apply(data.frame(mapply('*',df[[y]],c(a[x,]),SIMPLIFY = FALSE)), MARGIN = 1, FUN = function(z) sum(z,na.rm = T)) # Multiply each i for a given p by the sector specific weight set by a given row of the alpha matrix
       }),MARGIN = 1, which.max) - 1
   })
-  x = 55988
-  y = 1
-  sapply(55988, FUN = function(x){
-    if(x %in% print_a){print(paste0(x,' iterations'))}
-    apply(sapply(1:p, df = lapply(X_n_i_p, "[",i.test,), FUN = function(y,df){
-      apply(data.frame(mapply('*',df[[y]],c(a[x,]),SIMPLIFY = FALSE)), MARGIN = 1, FUN = function(z) sum(z,na.rm = T)) # Multiply each i for a given p by the sector specific weight set by a given row of the alpha matrix
-      }),MARGIN = 1, which.max) - 1
-  })
+  # x = 55988
+  # y = 1
+  # sapply(55988, FUN = function(x){
+    # if(x %in% print_a){print(paste0(x,' iterations'))}
+    # apply(sapply(1:p, df = lapply(X_n_i_p, "[",i.test,), FUN = function(y,df){
+      # apply(data.frame(mapply('*',df[[y]],c(a[x,]),SIMPLIFY = FALSE)), MARGIN = 1, FUN = function(z) sum(z,na.rm = T)) # Multiply each i for a given p by the sector specific weight set by a given row of the alpha matrix
+      # }),MARGIN = 1, which.max) - 1
+  # })
   # # Save model results
   write.table(x = data.frame(obj_i,stringsAsFactors = F),file = file.path(paste0(wkdir,'/MSP_Model/Output/Data/MSP_Planning_Results.csv')), sep = ",",quote = FALSE, col.names = FALSE, row.names = FALSE)
   ## Turn primary variables into a list
@@ -201,7 +218,7 @@ if(readline('Perform Full Analysis? Y/N ') == 'Y')){
   print('loading planning results')
   obj_i <- read.csv(file.path('~/MSP_Model/Output/Data/MSP_Planning_Results.csv'))
 }
-source('~/MSP_Model/Scripts/Model_QA.r')
+# source('~/MSP_Model/Scripts/Model_QA.r')
 
 
 #
