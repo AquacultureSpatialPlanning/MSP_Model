@@ -6,25 +6,25 @@ tic %start timer
 % R=response (value or impact)
 % V=value (positive numbers are beneficial to sector)
 % X=scaled value (unitless, ranging 0-1, and sum to 1)
-% 
+%
 % n=sector (order: M, F, K, H, V, B, D)
 % i=sites
 % p=policy
 
 %% load sector response data
 % [NUM1,TXT1,RAW1]=xlsread('Raw_Patch_Data.csv'); %Joel says this data is rounded and thus INCORRECT
-% 1 Mussel	
-% 2 Finfish	
-% 3 Kelp 	
-% 4 Halibut 	
-% 5 Views_Finfish	
-% 6 Views_Mussel_Kelp 	
-% 7 Benthic 	
-% 8 Disease 
+% 1 Mussel
+% 2 Finfish
+% 3 Kelp
+% 4 Halibut
+% 5 Views_Finfish
+% 6 Views_Mussel_Kelp
+% 7 Benthic
+% 8 Disease
 
 %INSTEAD, use .mat file provided by Joel:
 load('Raw_Impacts')
-% Raw_Impacts = 
+% Raw_Impacts =
 %  1                 Mussel: [1061x1 double]
 %  2                Finfish: [1061x1 double]
 %  3                   Kelp: [1061x1 double]
@@ -38,7 +38,7 @@ A = struct2cell(Raw_Impacts);
 %Note, NaN's already inserted for B and D (in 669 cells each)
 %Note, order of V_M_K and V_F is reversed in Raw_Impacts.mat compared with Raw_Patch_Data.csv,
 %so I changed the indexing in the below Response calculations
-Raw_Impacts_double = cat(2,A{:}); 
+Raw_Impacts_double = cat(2,A{:});
 NUM1=Raw_Impacts_double; %for use in below analysis
 
 %% Parameters
@@ -57,7 +57,7 @@ R_n_i_p2=shell; %F, K, H, B and D zero (no value or no impact)
 R_n_i_p2(:,1)=NUM1(:,1); %M full value
 R_n_i_p2(:,4)=NUM1(:,4); %H full value, but then...
 %....if M can be developed at the site, then halibut value is zero
-R_n_i_p2(:,4)=(NUM1(:,1)==0).*R_n_i_p2(:,4); 
+R_n_i_p2(:,4)=(NUM1(:,1)==0).*R_n_i_p2(:,4);
 % R_n_i_p2(:,5)=NUM1(:,6); %V partial impact (for analysis of Raw_Patch_Data.csv)
 R_n_i_p2(:,5)=NUM1(:,5); %V partial impact (for analysis of Raw_Impacts.mat)
 %If M can't be developed at the site, then impact is zero:
@@ -68,7 +68,7 @@ R_n_i_p3=shell; %M, K, and H zero (no value)
 R_n_i_p3(:,2)=NUM1(:,2); %F full value
 R_n_i_p3(:,4)=NUM1(:,4); %H full value, but then...
 %....if F can be developed at the site, then halibut value is zero
-R_n_i_p3(:,4)=(NUM1(:,2)==0).*R_n_i_p3(:,4); 
+R_n_i_p3(:,4)=(NUM1(:,2)==0).*R_n_i_p3(:,4);
 % R_n_i_p3(:,5)=NUM1(:,5); %V full impact (for analysis of Raw_Patch_Data.csv)
 R_n_i_p3(:,5)=NUM1(:,6); %V full impact (for analysis of Raw_Impacts.mat)
 R_n_i_p3(:,6)=NUM1(:,7); %B full impact
@@ -112,7 +112,7 @@ end
 tmp=nanmax(R_n_i_p,[],3); %first max across policies
 R_bar_n=nanmax(tmp,[],1); %then max across sites
 
-%Calculate values 
+%Calculate values
 V_n_i_p=NaN(I,N,P);
 for n=1:N %for each sector
     for p=1:P %for each policy
@@ -126,7 +126,7 @@ end
 
 %Calculate unitless values
 max_p_V_n_i_p=nanmax(V_n_i_p,[],3); %for each sector and site, the policy with the max value
-sum_i_max_p_V_n_i_p=nansum(max_p_V_n_i_p,1); %sum of the above max values 
+sum_i_max_p_V_n_i_p=nansum(max_p_V_n_i_p,1); %sum of the above max values
 X_n_i_p=NaN(I,N,P);
 for n=1:N %for each sector
     for p=1:P %for each policy
@@ -179,6 +179,7 @@ end
 save TOA_data.mat %save variables
 save('Policy_i_a.mat','Policy_i_a','-v7.3');%save optimal policies (large file, so seperate)
 disp(['Took ',num2str(toc/60/60),' hours']) %report run time
+csvwrite('Policy_i_a.csv',Policy_i_a)
 
 %% Analysis of results
 figure
@@ -218,7 +219,7 @@ figure
 hist(Policy_i_a(:,55988),length(unique(Policy_i_a(:,55988))))
 title('Crows result')
 
-% Calculating R-bar for the viewshed sector 
+% Calculating R-bar for the viewshed sector
 % test: c should equal R_bar_n(5)
 a=squeeze(R_n_i_p(:,5,:));
 b=max(a,[],2);
@@ -244,7 +245,7 @@ WX_n_p=X_n_p_at_i.*aMatrix_repmatp %weighted unitless value of each policy to ea
 sumWX_n_p=nansum(WX_n_p,2) %sum of weighted unitless values across sectors
 tmp=find(sumWX_n_p==max(sumWX_n_p)) %Identify policy that maximizes summed weighted unitless value
 Policy_i_a(i,iM)=tmp(1);
-    
+
 %% Troubleshooting II: Go through math manually:
 a=Raw_Impacts_double(138,:); %7 sectors (in 8 cols) in site 138
 %viewshed analysis
@@ -258,7 +259,7 @@ tmp1=Raw_Impacts_double(:,5:6); %V responses to M/K and F
 [Y I]=max(tmp1,[],2); %max
 R_bar_v=max(Y) %max response by V across policies and sites
 %Note: the only times with M/K col is chosen for the max response is when
-%the response is zero in both M/K and F columns. 
+%the response is zero in both M/K and F columns.
 %at least one sector
 b=find(I==1);
 unique(NUM1(b,5:6));
@@ -272,6 +273,3 @@ V_v_138_1=R_bar_v-R_v_138_1
 V_v_138_2=R_bar_v-R_v_138_2
 V_v_138_3=R_bar_v-R_v_138_3
 V_v_138_4=R_bar_v-R_v_138_4
-
-
-

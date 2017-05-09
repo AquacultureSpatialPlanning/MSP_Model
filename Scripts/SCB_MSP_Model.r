@@ -127,11 +127,12 @@ R_n_i_p <- setNames(lapply(1:p,df = Raw_Impacts,FUN = function(x,df){
           return(df[[y]])
         }else{
           # For a sector recieving zero value or full impact set sector values to zero unless they were previously set as NA
-          df[[y]][!is.na(df[[y]])] <- 0
+          df[[y]] <- 0
           return(df[[y]])
         }
         })))),sector_names)
     }),c('No_Development','Develop_Mussel','Develop_Finfish','Develop_Kelp'))
+# Add in the ifelse to make it comparable to lines 52 - 88 in CW code
 R_n_i_p[[1]] <- R_n_i_p[[1]] %>%
   mutate(Viewshed = apply(R_n_i_p[[1]],MARGIN = 1,FUN = max,na.rm = T)) %>%
   select(-Viewshed_Finfish,-Viewshed_Mussel_Kelp) %>% select(Mussel,Finfish,Kelp,Halibut,Viewshed,Benthic_Impacts,Disease_Risk)
@@ -144,6 +145,7 @@ R_n_i_p[[3]] <- R_n_i_p[[3]] %>%
 R_n_i_p[[4]] <- R_n_i_p[[4]] %>%
   mutate(Viewshed = Viewshed_Mussel_Kelp) %>%
   select(-Viewshed_Finfish,-Viewshed_Mussel_Kelp) %>% select(Mussel,Finfish,Kelp,Halibut,Viewshed,Benthic_Impacts,Disease_Risk)
+true_sector_names <- names(R_n_i_p[[1]])
 # For sectors whose response is negative, calculate R_bar
 R_negative_sector_names <- names(R_n_i_p[[1]])[grepl(c('Viewshed|Benthic_|Disease_'),names(R_n_i_p[[1]]))]
 R_bar_n <- setNames(data.frame(t(do.call('rbind',lapply(1:length(R_negative_sector_names), data = lapply(R_n_i_p, R_negative_sector_names, FUN = function(x,y){
@@ -151,6 +153,7 @@ R_bar_n <- setNames(data.frame(t(do.call('rbind',lapply(1:length(R_negative_sect
   }),FUN = function(x,data){
     max(sapply(data,"[",x),na.rm = T)
     })))),R_negative_sector_names)
+# apply(sapply(1:1061,FUN = function(x){apply(data.frame(do.call("rbind",lapply(V_n_i_p,"[",x,))),MARGIN = 2,FUN = sum)}),MARGIN = 1,FUN = sum,na.rm=T)
 # Then calculate V_n_i_p based on the response of each sector (Supp. Info, Eq. S26)
 V_n_i_p <- setNames(lapply(1:p, df = R_n_i_p, df_bar = R_bar_n, FUN = function(x, df, df_bar){
   setNames(data.frame(t(do.call('rbind',lapply(1:length(names(R_n_i_p[[x]])), FUN = function(y){
@@ -161,26 +164,33 @@ V_n_i_p <- setNames(lapply(1:p, df = R_n_i_p, df_bar = R_bar_n, FUN = function(x
     }
     })))),names(R_n_i_p[[x]]))
   }), c('No_Development','Develop_Mussel','Develop_Finfish','Develop_Kelp'))
+# apply(sapply(1:7,FUN = function(x){apply(data.frame(do.call("rbind",lapply(V_n_i_p,"[",,x))),MARGIN = 2,FUN = max)}),MARGIN = 1,FUN = sum,na.rm=T)
 # Scale sector value n for each site i, by the domain-wide value that would be attained if the ideal development option to the sector was selected at site i, X_n_i_p (Supp. Info, Eq. S27)
+# X_n_i_p <- setNames(lapply(1:p, df = V_n_i_p, FUN = function(p,df){
+#       return(setNames(data.frame(t(do.call('rbind',lapply(1:length(sector_names), FUN = function(n){
+#         if((p == 2 | p == 4) & sector_names[n] == 'Viewshed_Finfish'){
+#           return(rep(0,times = i))
+#         }else if((p == 3 | p == 1) & sector_names[n] == 'Viewshed_Mussel_Kelp'){
+#           return(rep(0,times = i))
+#         }else{
+#           if(p == 1 & sector_names[n] == 'Viewshed_Finfish'){
+#             return(apply(df[[p]][,c(5,6)],MARGIN = 1, FUN = max,na.rm = T) / sum(apply(data.frame(apply(df[[p]][,c(5,6)],MARGIN = 1, FUN = max,na.rm = T)),MARGIN = 1, FUN = function(z){ifelse(!all(is.na(z)),max(z, na.rm = T),NA)}),na.rm = T))
+#           }else{
+#             return(df[[p]][,n] / sum(apply(sapply(df,"[", ,n),MARGIN = 1, FUN = function(z){ifelse(!all(is.na(z)),max(z, na.rm = T),NA)}),na.rm = T))
+#           }
+#         }
+#       })))),true_sector_names))
+#   }),c('No_Development','Develop_Mussel','Develop_Finfish','Develop_Kelp'))
+# sum(apply(sapply(V_n_i_p,"[", ,7),MARGIN = 1, FUN = function(z){ifelse(!all(is.na(z)),max(z, na.rm = T),NA)}),na.rm = T)
+# sum(apply(sapply(V_n_i_p,"[", ,6),MARGIN = 1, FUN = function(z){ifelse(!all(is.na(z)),max(z, na.rm = T),NA)}),na.rm = T)
 X_n_i_p <- setNames(lapply(1:p, df = V_n_i_p, FUN = function(p,df){
-      return(setNames(data.frame(t(do.call('rbind',lapply(1:length(sector_names), FUN = function(n){
-        if((p == 2 | p == 4) & sector_names[n] == 'Viewshed_Finfish'){
-          return(rep(0,times = i))
-        }else if((p == 3 | p == 1) & sector_names[n] == 'Viewshed_Mussel_Kelp'){
-          return(rep(0,times = i))
-        }else{
-          if(p == 1 & sector_names[n] == 'Viewshed_Finfish'){
-            return(apply(df[[p]][,c(5,6)],MARGIN = 1, FUN = max,na.rm = T) / sum(apply(data.frame(apply(df[[p]][,c(5,6)],MARGIN = 1, FUN = max,na.rm = T)),MARGIN = 1, FUN = function(z){ifelse(!all(is.na(z)),max(z, na.rm = T),NA)}),na.rm = T))
-          }else{
-            return(df[[p]][,n] / sum(apply(sapply(df,"[", ,n),MARGIN = 1, FUN = function(z){ifelse(!all(is.na(z)),max(z, na.rm = T),NA)}),na.rm = T))
-          }
-        }
-      })))),sector_names))
+      return(setNames(data.frame(t(do.call('rbind',lapply(1:length(true_sector_names), FUN = function(n){
+        print(n);
+        print(p);
+        print(sum(apply(sapply(df,"[", ,n),MARGIN = 1, FUN = function(z){ifelse(!all(is.na(z)),max(z, na.rm = T),NA)}),na.rm = T));
+        df[[p]][,n] / sum(apply(sapply(df,"[", ,n),MARGIN = 1, FUN = function(z){ifelse(!all(is.na(z)),max(z, na.rm = T),NA)}),na.rm = T)
+      })))),true_sector_names))
   }),c('No_Development','Develop_Mussel','Develop_Finfish','Develop_Kelp'))
-  # X_n_i_p <- setNames(lapply(1:p, df = V_n_i_p, FUN = function(p,df){
-  #       return(setNames(data.frame(t(do.call('rbind',lapply(1:length(sector_names), FUN = function(n){
-  #
-  #   }),c('No_Development','Develop_Mussel','Develop_Finfish','Develop_Kelp'))
 # Create the sector weights (alpha's)
 library(gtools)
 epsilon <- .20 # Epsilon step size, default is 0.20
@@ -219,12 +229,22 @@ if(readline('Perform Full Analysis? Y/N ') == 'Y'){
   obj_i <- read.csv(file.path('~/MSP_Model/Output/Data/MSP_Planning_Results.csv'))
 }
 # source('~/MSP_Model/Scripts/Model_QA.r')
+# Load and subtract 1 from each entry in order to allow for an accurate comparison
+obj_i.JS <- obj_i
+obj_i.CW <- apply(read.csv('~/MSP_Model/Scripts/CrowT0v1/Policy_i_a.csv',stringsAsFactors=FALSE, header=T, nrows=1061),MARGIN = 2,FUN = function(x){x - 1})
+# Compare the two sets of results
+obj_i.compare <- obj_i.JS == obj_i.CW
+# Summarize for each row
+summary.i <- apply(obj_i.compare, MARGIN = 1, FUN = function(x){length(which(x))})
+summary.j <- apply(obj_i.compare, MARGIN = 2, FUN = function(x){length(which(x))})
+
+# Compare the two case study
+i.test <- 138
+a.test <- 55988
+
+print(obj_i.JS[i.test,a.test] == obj_i.CW[i.test,a.test])
 
 
-#
-#
-#
-#
 # # Add the actual values of each sector n for each policy p at site i
 # # Develop mussel
 # p = p_options[[1]]
