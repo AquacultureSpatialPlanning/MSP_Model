@@ -127,23 +127,26 @@ R_n_i_p <- setNames(lapply(1:p,df = Raw_Impacts,FUN = function(x,df){
           return(df[[y]])
         }else{
           # For a sector recieving zero value or full impact set sector values to zero unless they were previously set as NA
-          df[[y]] <- 0
+          df[[y]][!is.na(df[[y]])] <- 0
           return(df[[y]])
         }
         })))),sector_names)
     }),c('No_Development','Develop_Mussel','Develop_Finfish','Develop_Kelp'))
 # Add in the ifelse to make it comparable to lines 52 - 88 in CW code
 R_n_i_p[[1]] <- R_n_i_p[[1]] %>%
-  mutate(Viewshed = apply(R_n_i_p[[1]],MARGIN = 1,FUN = max,na.rm = T)) %>%
+  mutate(Viewshed = 0) %>%
   select(-Viewshed_Finfish,-Viewshed_Mussel_Kelp) %>% select(Mussel,Finfish,Kelp,Halibut,Viewshed,Benthic_Impacts,Disease_Risk)
 R_n_i_p[[2]] <- R_n_i_p[[2]] %>%
-  mutate(Viewshed = Viewshed_Mussel_Kelp) %>%
+  mutate(Viewshed = Viewshed_Mussel_Kelp) %>% mutate(Halibut = ifelse(Mussel == 0,Raw_Impacts$Halibut,0)) %>%
+  mutate(Viewshed = ifelse(Mussel > 0,Raw_Impacts$Viewshed_Mussel_Kelp,0)) %>%
   select(-Viewshed_Finfish,-Viewshed_Mussel_Kelp) %>% select(Mussel,Finfish,Kelp,Halibut,Viewshed,Benthic_Impacts,Disease_Risk)
 R_n_i_p[[3]] <- R_n_i_p[[3]] %>%
-  mutate(Viewshed = Viewshed_Finfish) %>%
+  mutate(Viewshed = Viewshed_Finfish) %>% mutate(Halibut = ifelse(Finfish == 0,Raw_Impacts$Halibut,0)) %>%
+  mutate(Viewshed = ifelse(Finfish > 0,Raw_Impacts$Viewshed_Finfish,0)) %>%
   select(-Viewshed_Finfish,-Viewshed_Mussel_Kelp) %>% select(Mussel,Finfish,Kelp,Halibut,Viewshed,Benthic_Impacts,Disease_Risk)
 R_n_i_p[[4]] <- R_n_i_p[[4]] %>%
-  mutate(Viewshed = Viewshed_Mussel_Kelp) %>%
+  mutate(Viewshed = Viewshed_Mussel_Kelp) %>% mutate(Halibut = ifelse(Kelp == 0,Raw_Impacts$Halibut,0)) %>%
+  mutate(Viewshed = ifelse(Kelp > 0,Raw_Impacts$Viewshed_Mussel_Kelp,0)) %>%
   select(-Viewshed_Finfish,-Viewshed_Mussel_Kelp) %>% select(Mussel,Finfish,Kelp,Halibut,Viewshed,Benthic_Impacts,Disease_Risk)
 true_sector_names <- names(R_n_i_p[[1]])
 # For sectors whose response is negative, calculate R_bar
@@ -228,21 +231,39 @@ if(readline('Perform Full Analysis? Y/N ') == 'Y'){
   print('loading planning results')
   obj_i <- read.csv(file.path('~/MSP_Model/Output/Data/MSP_Planning_Results.csv'))
 }
+
+test.i <- 1000
+print('Raw_Impacts')
+print(Raw_Impacts[test.i,])
+print('................................................................................................')
+print('R_n_i_p')
+print(sapply(R_n_i_p,"[",test.i,))
+print('................................................................................................')
+print('R_bar_n')
+print(R_bar_n)
+print('................................................................................................')
+print('V_n_i_p')
+print(sapply(V_n_i_p,"[",test.i,))
+print('................................................................................................')
+print('X_n_i_p')
+print(sapply(X_n_i_p,"[",test.i,))
+CW_Variables <- readMat('~/MSP_Model/Scripts/CrowT0v1/TOA_data.mat')
+
 # source('~/MSP_Model/Scripts/Model_QA.r')
 # Load and subtract 1 from each entry in order to allow for an accurate comparison
-obj_i.JS <- obj_i
-obj_i.CW <- apply(read.csv('~/MSP_Model/Scripts/CrowT0v1/Policy_i_a.csv',stringsAsFactors=FALSE, header=T, nrows=1061),MARGIN = 2,FUN = function(x){x - 1})
-# Compare the two sets of results
-obj_i.compare <- obj_i.JS == obj_i.CW
-# Summarize for each row
-summary.i <- apply(obj_i.compare, MARGIN = 1, FUN = function(x){length(which(x))})
-summary.j <- apply(obj_i.compare, MARGIN = 2, FUN = function(x){length(which(x))})
-
-# Compare the two case study
-i.test <- 138
-a.test <- 55988
-
-print(obj_i.JS[i.test,a.test] == obj_i.CW[i.test,a.test])
+# obj_i.JS <- obj_i
+# obj_i.CW <- apply(read.csv('~/MSP_Model/Scripts/CrowT0v1/Policy_i_a.csv',stringsAsFactors=FALSE, header=T, nrows=1061),MARGIN = 2,FUN = function(x){x - 1})
+# # Compare the two sets of results
+# obj_i.compare <- obj_i.JS == obj_i.CW
+# # Summarize for each row
+# summary.i <- apply(obj_i.compare, MARGIN = 1, FUN = function(x){length(which(x))})
+# summary.j <- apply(obj_i.compare, MARGIN = 2, FUN = function(x){length(which(x))})
+#
+# # Compare the two case study
+# i.test <- 138
+# a.test <- 55988
+#
+# print(obj_i.JS[i.test,a.test] == obj_i.CW[i.test,a.test])
 
 
 # # Add the actual values of each sector n for each policy p at site i
