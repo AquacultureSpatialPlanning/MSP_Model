@@ -211,14 +211,15 @@ if(readline('Perform Full Analysis? Y/N ') == 'Y'){
       apply(data.frame(mapply('*',df[[y]],c(a[x,]),SIMPLIFY = FALSE)), MARGIN = 1, FUN = function(z) sum(z,na.rm = T)) # Multiply each i for a given p by the sector specific weight set by a given row of the alpha matrix
       }),MARGIN = 1, which.max) - 1
   })
-  # x = 55988
-  # y = 1
-  # sapply(55988, FUN = function(x){
-    # if(x %in% print_a){print(paste0(x,' iterations'))}
-    # apply(sapply(1:p, df = lapply(X_n_i_p, "[",i.test,), FUN = function(y,df){
-      # apply(data.frame(mapply('*',df[[y]],c(a[x,]),SIMPLIFY = FALSE)), MARGIN = 1, FUN = function(z) sum(z,na.rm = T)) # Multiply each i for a given p by the sector specific weight set by a given row of the alpha matrix
-      # }),MARGIN = 1, which.max) - 1
-  # })
+  x = 55988
+  y = 1
+  i.test <- 1000
+  sapply(55988, FUN = function(x){
+    if(x %in% print_a){print(paste0(x,' iterations'))}
+    apply(sapply(1:p, df = lapply(X_n_i_p, "[",i.test,), FUN = function(y,df){
+      apply(data.frame(mapply('*',df[[y]],c(a[x,]),SIMPLIFY = FALSE)), MARGIN = 1, FUN = function(z) sum(z,na.rm = T)) # Multiply each i for a given p by the sector specific weight set by a given row of the alpha matrix
+      }),MARGIN = 1, which.max) - 1
+  })
   # # Save model results
   write.table(x = data.frame(obj_i,stringsAsFactors = F),file = file.path(paste0(wkdir,'/MSP_Model/Output/Data/MSP_Planning_Results.csv')), sep = ",",quote = FALSE, col.names = FALSE, row.names = FALSE)
   ## Turn primary variables into a list
@@ -231,7 +232,35 @@ if(readline('Perform Full Analysis? Y/N ') == 'Y'){
   print('loading planning results')
   obj_i <- read.csv(file.path('~/MSP_Model/Output/Data/MSP_Planning_Results.csv'))
 }
+# Summarize JS Results
+JS_Summary <- do.call('rbind',lapply(1:i, FUN = function(x){
+                print(x)
+                # return(table(obj_i[x,]))
+                tmp <- rep(0,times = p)
+                summary.tmp <- table(obj_i[x,])
+                choices <- as.numeric(names(summary.tmp))
+                numbers <- unname(summary.tmp)
+                tmp[choices + 1] <- numbers
+                return(tmp)
+              }))
+# Load CW Data
+CW_Summary <- read.csv('~/MSP_Model/Scripts/CrowT0v1/CW_Results_Summary.csv',header = FALSE) %>% glimpse()
+# CW_Summary <- readMat('~/MSP_Model/Scripts/CrowT0v1/CW_Results_Summary.mat')[['CW.results']]
+for(itor in 1:100){
+  test.i <- sample(1:1061,1)
+  print(test.i)
+  print(CW_Summary[test.i,])
+  print(JS_Summary[test.i,])
+  print(CW_Summary[test.i,] - JS_Summary[test.i,])
+}
 
+
+summary(JS_Summary - CW_Summary)
+setNames(apply(JS_Summary - CW_Summary,MARGIN = 2, FUN = function(x){length(which(x != 0))}),c('No_Development','Develop_Mussel','Develop_Finfish','Develop_Kelp'))
+foo <- setNames(sapply(1:p,FUN = function(x){
+  which(JS_Summary[[x]] - CW_Summary[[x]] != 0)
+  }),c('No_Development','Develop_Mussel','Develop_Finfish','Develop_Kelp'))
+sapply(1:i,FUN = function(x){JS_Summary[x,] - CW_Summary[x,] != 0})
 test.i <- 1000
 print('Raw_Impacts')
 print(Raw_Impacts[test.i,])
@@ -248,7 +277,12 @@ print('.........................................................................
 print('X_n_i_p')
 print(sapply(X_n_i_p,"[",test.i,))
 CW_Variables <- readMat('~/MSP_Model/Scripts/CrowT0v1/TOA_data.mat')
-
+X_n_i_p.CW = setNames(lapply(1:p,FUN = function(x){setNames(data.frame(CW_Variables[['X.n.i.p']][,,x]),true_sector_names)}),c('No_Development','Develop_Mussel','Develop_Finfish','Develop_Kelp'))
+lapply(1:p,FUN = function(x){
+  X_n_i_p.CW[[x]] - X_n_i_p[[x]]
+  })
+X_n_i_p.diff <- setNames(lapply(1:p,FUN = function(x){setNames(data.frame(round(X_n_i_p.CW[[x]] - X_n_i_p[[x]],10)),true_sector_names)}),c('No_Development','Develop_Mussel','Develop_Finfish','Develop_Kelp'))
+apply(rbindlist(X_n_i_p.diff),MARGIN = 2,FUN = sum,na.rm = T)
 # source('~/MSP_Model/Scripts/Model_QA.r')
 # Load and subtract 1 from each entry in order to allow for an accurate comparison
 # obj_i.JS <- obj_i
