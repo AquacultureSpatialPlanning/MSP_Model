@@ -15,12 +15,15 @@ set(0,'DefaultAxesLineWidth',2)
 set(0,'DefaultSurfaceLineWidth',2)
 set(0,'DefaultFigureVisible','off') % Turn off figure display (figures will be saved in output folder), set to on to see figures as they are plotted
 %% Set directories
-cd('~'); home_directory = strcat(pwd(),'/MSP_Model/'); cd(home_directory)
-script_dir = strcat(home_directory,'/Scripts/Halibut/'); addpath(script_dir) % Script Directory
-input_figure_dir = strcat(pwd(),'/Input/Figures/'); addpath(input_figure_dir) % Input Figure Directory
-input_data_dir = strcat(pwd(),'/Input/Data/'); addpath(input_data_dir) % Input Data Directory
-output_figure_dir = strcat(pwd(),'/Output/Figures/'); addpath(output_figure_dir) % Output Figure Directory
-output_data_dir = strcat(pwd(),'/Output/Data/'); addpath(output_data_dir) % Output Data Directory
+% root = cell2mat(strsplit(pwd,'MSP_Model/Scripts'));
+pathtool
+load 'file_dir_params'
+% cd('~'); home_directory = strcat(pwd(),'/MSP_Model/'); cd(home_directory)
+% script_dir = strcat(home_directory,'/Scripts/Halibut/'); addpath(script_dir) % Script Directory
+% input_figure_dir = strcat(pwd(),'/Input/Figures/'); addpath(input_figure_dir) % Input Figure Directory
+% input_data_dir = strcat(pwd(),'/Input/Data/'); addpath(input_data_dir) % Input Data Directory
+% output_figure_dir = strcat(pwd(),'/Output/Figures/'); addpath(output_figure_dir) % Output Figure Directory
+% output_data_dir = strcat(pwd(),'/Output/Data/'); addpath(output_data_dir) % Output Data Directory
 %% Globals
 global alphaCR habitat_area_i numpatches max_age Bij age_mature Dii K age_legal Ei delta Nij Mii age_move Wij TargetBiomass beta_i...
     Rmax CRgoal Nij_initial theta price Theta_Density_prop K_legal_virgin_abundance PostHstockdensity_i PostHstockdensity_kvirgin...
@@ -190,7 +193,7 @@ if load0_do1_tuning==1
     clear load0_do1_tuning Plot_params1_0N_1Y Verify_model_0N_1Y runtimeseries_0N_1Y
     %save all the tuned parameter results
     tuned_params=Fsum;
-    save(strcat(output_data_dir,'tuned_params'))
+    save(strcat(input_data_dir,'tuned_params'))
     % break
 elseif load0_do1_tuning == 0 %do not tune params...just load them from previous tuning
     load(strcat(input_data_dir,'tuned_params'))
@@ -275,4 +278,10 @@ if runtimeseries_0N_1Y==1
     target_fid_fulldomain=study_area_polygons_PacCoastFisheryGIS_NUM(:,col_target_fid);
     xlswrite(strcat(output_data_dir,'Target_FID_and_Yi_fulldomain_NPV_at_MSY_noAqua.xlsx'),[target_fid_fulldomain Yi_fulldomain_NPV]);
 end
+% Save Variables for running dynamic halibut model, those not included are Aqua_dev_indices
+gamma_var = gamma;
+save(strcat(script_dir,'Dynamic_Evaluation_Files/tuned_parameters_short'),'target_fid_fulldomain','SQ_1fishable_0notfishable_for_each_soft_depth_patch_ORIGINAL'...
+         ,'Nij_initial_msy_TS','x0_PPUE_msy_TS','Fsum_msy','target_fid_hab_depth','Wij','numpatches','max_age','T','delta','age_legal','age_mature','Dii','alphaCR','beta_i'...
+         ,'habitat_area_i','theta','price','gamma_var','distance_to_port_for_each_soft_depth_patch','Mii','habitat_area_i','age_move','discount_rate_iy','x0_PPUE_initial'...
+         ,'x0_PPUE_msy_TS','Bi_legal','SQ_1fishable_0notfishable_for_each_soft_depth_patch','Fsum')
 quit()
