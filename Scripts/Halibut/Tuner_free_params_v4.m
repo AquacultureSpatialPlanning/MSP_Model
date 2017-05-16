@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 disp('MATLAB MSP Halibut Model')
+=======
+>>>>>>> e9a6acd68e4a0fd08b18829858208289c9350661
 close all
 clear all
 disp('------------------------')
