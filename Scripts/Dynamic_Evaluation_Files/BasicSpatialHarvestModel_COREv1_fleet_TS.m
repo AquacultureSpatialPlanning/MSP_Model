@@ -1,8 +1,8 @@
 % %Crow White: This is a basic age-structured spatially explicit model that
 % %can be used for a zillion different applications. I've commented it
-% %thoroughly for clarity. For more explanation see Section 4.2 in the SI of 
+% %thoroughly for clarity. For more explanation see Section 4.2 in the SI of
 % % White et al. 2012 PNAS. (Note: Different than Eq. S11 [Section 4.2.5] here
-% % natural and fishing mortality are calculated using an exponential function). 
+% % natural and fishing mortality are calculated using an exponential function).
 % %READ AND AGREE TO BEFORE CONTINUING: If you use this model for a
 % %project/publication let me know. Also, provide me with the
 % %opportunity to be a part of the project/publication as a co-PI or co-Author. Thanks! Crow
@@ -28,7 +28,7 @@ else
         BasicSpatialHarvestModel_COREv1_TS
         Ei=Fsum.*(sum(Bij,2)./sum(sum(Bij(:))));
         BasicSpatialHarvestModel_COREv1_TS %Nij and Bij outputs from this then are used below
-        x0_PPUE=sum(Payoff)/sum(Ei); 
+        x0_PPUE=sum(Payoff)/sum(Ei);
         x0_PPUE(isnan(x0_PPUE))=0; %if Fsum sum(Ei) is zero then set to zero
     end
 end
@@ -55,49 +55,49 @@ Payoffiy=NaN(numpatches,T); %payoff (e.g., profit)
 % Survivei_nonlegal=exp(-(Ei.*0+delta)); %survival rate of non-harvested fish ~ natural mortality
 Survivei_nonlegal=exp(-(delta)); %survival rate of non-harvested fish ~ natural mortality
 Surviveij_nonlegal=repmat(Survivei_nonlegal,1,length(1:(age_legal-1))); %survival rate per patch, per age class
-% Surviveij=[Surviveij_nonlegal,Surviveij_legal]; %stitch survival rates together for all age classes    
+% Surviveij=[Surviveij_nonlegal,Surviveij_legal]; %stitch survival rates together for all age classes
 y=0; %keeps track of years  - TIME SERIES DATA
 for t=1:T %start of simulation loop - TIME SERIES DATA
     y=y+1; %increase by one each year - TIME SERIES DATA
 %     Bijy(:,:,y)=Bij; %biomass at beginning of year - TIME SERIES DATA
     Kold=sum(Bij(:)); %store for comparison to end of this year (i.e., beginning of next year)
-    
+
     Bi_mature=sum(Bij(:,age_mature:end),2); %biomass of mature fish in each patch
     Li=Bi_mature; %number of larvae produced in each patch ~ fish biomass
     Si=(Li'*Dii)'; %disperse the larvae according to transition probabilities
     RNi=(Si.*alphaCR)./(1+Si.*beta_i); %number of recruits in each patch following Density Dependence
-    %Note: the above DD function is Beverton-Holt (could be Ricker, etc.), and 
+    %Note: the above DD function is Beverton-Holt (could be Ricker, etc.), and
     %the beta_i includes area habitat area thus converts the Si in the denominator to *density* of settlers.
-    
+
     %Biomass before harvest and natural mortality:
     Bi_legal=sum(Bij(:,age_legal:end),2); %LEGAL fish in each patch
 %     Bi_ALL_preH=sum(Bij,2); %ALL size (set by age) fish in each patch
-     
-    %Fleet model        
+
+    %Fleet model
     options=optimset('Display','off'); %,'TolX',TolX_value,'TolFun',TolFun_value);
     [x0_PPUE,should_be_zero,flag]=fminunc(@Fleet_stockeffectdensity_v1,[x0_PPUE],options); %find PPUE=constant across patches
     x0_PPUE(x0_PPUE<0)=0;
-    Ei=Ei_wrt_PPUE(x0_PPUE,habitat_area_i,theta,price,Bi_legal,delta,gamma,distance_to_port_for_each_soft_depth_patch,SQ_1fishable_0notfishable_for_each_soft_depth_patch); 
+    Ei=Ei_wrt_PPUE(x0_PPUE,habitat_area_i,theta,price,Bi_legal,delta,gammatmp,distance_to_port_for_each_soft_depth_patch,SQ_1fishable_0notfishable_for_each_soft_depth_patch);
 
     %Plug in effort levels
     Survivei_legal=exp(-(Ei+delta)); %survival rate of harvested fish in each patch ~ fishing + natural mortality. Same for all legal-to-fish ages
     Surviveij_legal=repmat(Survivei_legal,1,length(age_legal:max_age)); %survival rate per patch, per age class
-    Surviveij=[Surviveij_nonlegal,Surviveij_legal]; %stitch survival rates together for all age classes    
-    
-%     Yield - TIME SERIES DATA  
+    Surviveij=[Surviveij_nonlegal,Surviveij_legal]; %stitch survival rates together for all age classes
+
+%     Yield - TIME SERIES DATA
     Yi=(Bi_legal.*(1-Survivei_legal)).*(Ei./(Ei+delta)); %biomass yield in each patch - TIME SERIES DATA
     Yiy(:,y)=Yi; %biomass yield in each patch - TIME SERIES DATA
 
     %Escapement: biomass after harvest and natural mortality:
     Bij_escape=Bij(:,age_legal:end).*Surviveij(:,age_legal:end); %LEGAL fish in each patch
     % Bij_escape=Bij.*Surviveij; %ALL size (set by age) fish in each patch
-    
+
     SSBij_postharvest=Bij(:,age_mature:end).*Surviveij(:,age_mature:end); %SSB right after harvest
     SSB_postharvest=sum(sum(SSBij_postharvest));
-    
+
     %Surviving fish transition to next age class:
     Nij(:,2:end)=Nij(:,1:(end-1)).*Surviveij(:,1:(end-1)); %number of fish that survive to next age class (all fish at max age die)
-    Nij(:,1)=RNi; %add recruit number to the first age class 
+    Nij(:,1)=RNi; %add recruit number to the first age class
     % adult movement
     Nij_move=(Nij'*Mii)';
     Nij(:,age_move:max_age)=Nij_move(:,age_move:max_age); %update Nij with adults following their movement
@@ -114,12 +114,12 @@ for t=1:T %start of simulation loop - TIME SERIES DATA
     PostHstockdensity_i(PostHstockdensity_i==Inf)=0; %set infinity patches (i.e., where habitat_area_i=0) to zero
     %Economics
     Tcost_density_no_distance_effect=theta.*(log(PreHstockdensity_i)-log(PostHstockdensity_i)); %total cost per unit area (ie density)
-    Tcost_density=Tcost_density_no_distance_effect.*(1+gamma.*distance_to_port_for_each_soft_depth_patch);
+    Tcost_density=Tcost_density_no_distance_effect.*(1+gammatmp.*distance_to_port_for_each_soft_depth_patch);
     Tcost=Tcost_density.*habitat_area_i; %convert total cost per unit area to total cost in each patch
     Tcost_fishery=Tcost.*(Ei./(Ei+delta)); %stock effect cost that fishery bears.  Q: IS THIS CORRECT? OR, SHOULD COST TO THE FISHERY ONLY BE A FCN OF EFFORT (NOT EFFORT TIMES CATCHABILITY)??? <<If change this then need to change fleet model function Ei_wrt_PPUE_qi
-    Trevenue=Yi.*price;  
+    Trevenue=Yi.*price;
     %Calc and record profit
-    Tprofit=Trevenue-Tcost_fishery; 
+    Tprofit=Trevenue-Tcost_fishery;
     Tprofit(PreHstockdensity_i==0)=0; %otherwise cost is infinity and profit =NaN
     Tprofit(PostHstockdensity_i==0)=0;%otherwise cost is infinity and profit =NaN
     Payoff=Tprofit;
@@ -127,7 +127,7 @@ for t=1:T %start of simulation loop - TIME SERIES DATA
     % disp(['sum(Payoff)=',num2str(sum(Payoff))]);
 
 end %end of simulation loop
- 
+
 %get rid of NaNs at end of records
 % Yiy=Yiy(:,1:y); - TIME SERIES DATA
 % Bijy=Bijy(:,:,1:y); - TIME SERIES DATA
