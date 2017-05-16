@@ -52,6 +52,7 @@ if strcmp(str,'Y')
             disp(['Iteration set ',num2str(index_jobs),' submitted'])
         end
         disp('Job Finished...........')
+        git filter-branch --force --index-filter 'git rm --cached --ignore-unmatch Output/Data/mij.mat' --prune-empty --tag-name-filter cat -- --all
          % Dynamic Job Compiler -> Add description later and finish later
     % Must manually input the list
     % disp('Once jobs are finished uncomment and run the following section')
