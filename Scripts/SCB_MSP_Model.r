@@ -1,11 +1,23 @@
+<<<<<<< HEAD
 # NOTE: MATLAB requires 'Mapping Toolbox', 'Bioinformatics', 'Parallel Optimization'
 # Set current working directory as a string
 wkdir <- getwd()
+=======
+# MATLAB requires 'Mapping Toolbox', 'Bioinformatics', 'Parallel Optimization'
+# Set current working directory as a string
+# fdirs$home <- "~/MSP_Model/"
+# fdirs$scrpdir <- "~/MSP_Model/Scripts/"
+# fdirs$inpdatadir <- "~/MSP_Model/Input/Data/"
+# fdirs$inpfigdir <- "~/MSP_Model/Input/Figures/"
+# fdirs$outdatadir <- "~/MSP_Model/Output/Data/"
+# fdirs$outfigdir <- "~/MSP_Model/Output/Figures/"
+>>>>>>> 6db92178a3ff2a1c0842405cba87cc48775d5ab5
 # Load necessary R libraries. For the function R_Libraries, enter T if this is the first time running the model. This will
 # install all of the necessary libraries and load them into the
 # current workspace.
-source(paste0(wkdir,'/MSP_Model/Scripts','/R_Libraries.r'))
-R_Libraries(F) # After the first initial run this can be set to F
+# Install R markdown
+install.packages("knitr",repos = 'https://cran.mtu.edu/')
+library(knitr)
 # Set global variables
 n.sector <- 7 # Number of sectors
 epsilon <- 0.2 # Stepsize of sector weights
@@ -13,7 +25,7 @@ t <- 10 # Time Horizon
 r <- 0.05 # Discount rate
 paste0(
 # Read sector data
-sector_data.df <- read.csv(paste0(wkdir,'/MSP_Model/Input/Data/SeaGrant_data_complete_2015.csv'))
+sector_data.df <- read.csv(paste0(fdirs$inpdatadir,'SeaGrant_data_complete_2015.csv'))
 fulldomain <- sector_data.df$TARGET_FID # Model domain
 discount_factor <- 1/((1+r)^c(1:t))
 # Make a numeric matrix of the discount_factor with the dimensions of
@@ -61,15 +73,16 @@ r_iy_aqua <- do.call(rbind, replicate(length(fulldomain), discount_factor, simpl
 # of aquaculture (var Aqua.Full.Domain),
 Aqua.Full.Domain <- data.frame(M$Annuity,F$Annuity,K$Annuity)
 Aqua.Full.Domain.Logical <- apply(1 * (Aqua.Full.Domain > 0),FUN=sum,MARGIN=1) > 0
-# Sites that will be profitable for mussel (M.V_n_i_p)
-M.V_n_i_p <- M$Annuity[Aqua.Full.Domain.Logical]
-# Sites that will be profitable for finfish (F.V_n_i_p)
-F.V_n_i_p <- F$Annuity[Aqua.Full.Domain.Logical]
-# Sites that will be profitable for kelp (K.V_n_i_p)
-K.V_n_i_p <- K$Annuity[Aqua.Full.Domain.Logical]
+# Sites that will be profitable for mussel (M.V)
+M.V <- M$Annuity[Aqua.Full.Domain.Logical]
+# Sites that will be profitable for finfish (F.V)
+F.V <- F$Annuity[Aqua.Full.Domain.Logical]
+# Sites that will be profitable for kelp (K.V)
+K.V <- K$Annuity[Aqua.Full.Domain.Logical]
 
 # Run the Halibut fishing model and then load the results
 if(readline("Run halibut model or load results Y/N? ") == 'Y'){
+<<<<<<< HEAD
   print("Launching MATLAB.....");
   system2('/Applications/MATLAB_R2016b.app/bin/matlab',
     args = c('-nodesktop','-noFigureWindows','-nosplash','-r',
@@ -159,349 +172,137 @@ D.V_n_i_p[F.NPV[Aqua.Full.Domain.Logical] > 0] <- D.R_max - Di
 ## Plot Results
 
 
+=======
+  system2(matlab_root,
+    args = c('-nodesktop','-noFigureWindows','-nosplash','-r',
+    paste0("run\\(\\'",fdirs$scrpdir,"Halibut/Tuner_free_params_v4.m\\'\\)")))
+}
+H.V  <- (r*read.csv(paste0(fdirs$outdatadir,'Target_FID_and_Yi_fulldomain_NPV_at_MSY_noAqua.csv'),header=FALSE)[,2][Aqua.Full.Domain.Logical])/(1-((1+r)^-t))
 
+# Load Viewshed Data
+V_F.V <- (as.numeric(gsub(",", "", sector_data.df$res_views_8k)) + as.numeric(gsub(",", "",sector_data.df$park_views_8k)))[Aqua.Full.Domain.Logical]
+V_MK.V  <- (as.numeric(gsub(",", "", sector_data.df$res_views_3k)) + as.numeric(gsub(",", "",sector_data.df$park_view_3k)))[Aqua.Full.Domain.Logical]
+>>>>>>> 6db92178a3ff2a1c0842405cba87cc48775d5ab5
 
+# Load Benthic Data, for cells which are not developable for fish aqua set to NA
+B.V <- rep(NA,times = length(F.V))
+B.V[F.V > 0] <- sector_data.df$TOC.flux[Aqua.Full.Domain.Logical][F.V > 0]
 
+# Run the eigenvector centrality diseaase model in MATLAB and then load the results.
+# Write a .mat file with the filtered connectivity matrix
+filename <- paste0(fdirs$inpdatadir,"tmp.mat")
+writeMat(filename,
+eig = readMat(paste0(fdirs$inpdatadir,
+  'disease_connect_matrix.mat'))$disease.connect.matrix[F$Annuity > 0,F$Annuity > 0])
+# Character vector to send to MATLAB from R. The function eigencentrality is derived from http://strategic.mit.edu/downloads.php?page=matlab_networks
+code <- c("cd(strcat(pwd,\'/MSP_Model/Scripts/\'));",paste0('load \'',filename,'\';'),'d = abs(eigencentrality(eig));',
+'save(\'tmp.mat\',\'d\')')
+# Send arguments to matlab
+run_matlab_code(code)
+# Read the Mat file and remove the temporary one
+D.V <- rep(NA,times = length(F.V))
+D.V[F.V > 0] <- readMat(paste0(fdirs$scrpdir,'tmp.mat'))$d
+system2('rm',args = paste0(filename))
+# Save all of the raw outputs of each sector model in a seperate file --> do later
+print('Raw Impacts/Value.....')
+Raw_Impacts <- data.frame(Mussel = M.V, Finfish = F.V, Kelp = K.V, Halibut = H.V,
+  Viewshed_Mussel_Kelp = V_MK.V, Viewshed_Finfish = V_F.V, Benthic_Impacts = B.V,
+  Disease_Risk = D.V) %>% glimpse()
+# Make a .mat file of the sector files
+writeMat(paste0(fdirs$inpdatadir,'Raw_Impacts.mat'),Raw_Impacts = Raw_Impacts)
+## Tradeoff Model
+# Define parameters for the model
+sector_names <- names(Raw_Impacts)
+n <- 7 # Number of sectors
+i <- 1061 # Number of sites, nrow(Raw_Impacts)
+p <- 4 # Number of management options, 0 = no development, 1 = develop mussel, 2 = develop finfish, 3 = develop kelp, 4 = no development
+# Using the definied parameters derive variable V_n_i_p (value to sector n at site i for pursuing development option p)
+p_options <- list(c('Halibut'),c('Mussel','Viewshed_Mussel_Kelp'),c('Finfish','Viewshed_Finfish','Benthic_Impacts','Disease_Risk'),c('Kelp','Viewshed_Mussel_Kelp'))
+# Make a list of dataframes consiting of the responses for each policy p for each sector n at each site i
+R_n_i_p <- setNames(lapply(1:p,df = Raw_Impacts,FUN = function(x,df){
+      # Make the dataframe for each policy
+      tmp <- setNames(data.frame(t(do.call('rbind',lapply(1:length(sector_names), FUN = function(y){
+        if(sector_names[y] %in% p_options[[x]]){
+          return(df[[y]])
+        }else{
+          # For a sector recieving zero value or full impact set sector values to zero unless they were previously set as NA
+          df[[y]][!is.na(df[[y]])] <- 0
+          return(df[[y]])
+        }
+        })))),sector_names)
+    }),c('No_Development','Develop_Mussel','Develop_Finfish','Develop_Kelp'))
+# Add in the ifelse to make it comparable to lines 52 - 88 in CW code
+R_n_i_p[[1]] <- R_n_i_p[[1]] %>%
+  mutate(Viewshed = 0) %>%
+  select(-Viewshed_Finfish,-Viewshed_Mussel_Kelp) %>% select(Mussel,Finfish,Kelp,Halibut,Viewshed,Benthic_Impacts,Disease_Risk)
+R_n_i_p[[2]] <- R_n_i_p[[2]] %>%
+  mutate(Viewshed = Viewshed_Mussel_Kelp) %>% mutate(Halibut = ifelse(Mussel == 0,Raw_Impacts$Halibut,0)) %>%
+  mutate(Viewshed = ifelse(Mussel > 0,Raw_Impacts$Viewshed_Mussel_Kelp,0)) %>%
+  select(-Viewshed_Finfish,-Viewshed_Mussel_Kelp) %>% select(Mussel,Finfish,Kelp,Halibut,Viewshed,Benthic_Impacts,Disease_Risk)
+R_n_i_p[[3]] <- R_n_i_p[[3]] %>%
+  mutate(Viewshed = Viewshed_Finfish) %>% mutate(Halibut = ifelse(Finfish == 0,Raw_Impacts$Halibut,0)) %>%
+  mutate(Viewshed = ifelse(Finfish > 0,Raw_Impacts$Viewshed_Finfish,0)) %>%
+  select(-Viewshed_Finfish,-Viewshed_Mussel_Kelp) %>% select(Mussel,Finfish,Kelp,Halibut,Viewshed,Benthic_Impacts,Disease_Risk)
+R_n_i_p[[4]] <- R_n_i_p[[4]] %>%
+  mutate(Viewshed = Viewshed_Mussel_Kelp) %>% mutate(Halibut = ifelse(Kelp == 0,Raw_Impacts$Halibut,0)) %>%
+  mutate(Viewshed = ifelse(Kelp > 0,Raw_Impacts$Viewshed_Mussel_Kelp,0)) %>%
+  select(-Viewshed_Finfish,-Viewshed_Mussel_Kelp) %>% select(Mussel,Finfish,Kelp,Halibut,Viewshed,Benthic_Impacts,Disease_Risk)
+true_sector_names <- names(R_n_i_p[[1]])
+# For sectors whose response is negative, calculate R_bar
+R_negative_sector_names <- names(R_n_i_p[[1]])[grepl(c('Viewshed|Benthic_|Disease_'),names(R_n_i_p[[1]]))]
+R_bar_n <- setNames(data.frame(t(do.call('rbind',lapply(1:length(R_negative_sector_names), data = lapply(R_n_i_p, R_negative_sector_names, FUN = function(x,y){
+  apply(x[names(x) %in% R_negative_sector_names],MARGIN = 2, FUN = function(x) max(x,na.rm = T))
+  }),FUN = function(x,data){
+    max(sapply(data,"[",x),na.rm = T)
+    })))),R_negative_sector_names)
+# apply(sapply(1:1061,FUN = function(x){apply(data.frame(do.call("rbind",lapply(V_n_i_p,"[",x,))),MARGIN = 2,FUN = sum)}),MARGIN = 1,FUN = sum,na.rm=T)
+# Then calculate V_n_i_p based on the response of each sector (Supp. Info, Eq. S26)
+V_n_i_p <- setNames(lapply(1:p, df = R_n_i_p, df_bar = R_bar_n, FUN = function(x, df, df_bar){
+  setNames(data.frame(t(do.call('rbind',lapply(1:length(names(R_n_i_p[[x]])), FUN = function(y){
+    if(names(df[[x]])[y] %in% R_negative_sector_names){
+      return(R_bar_n[[names(df[[x]])[y]]] - df[[x]][,y])
+    }else{
+      return(df[[x]][,y])
+    }
+    })))),names(R_n_i_p[[x]]))
+  }), c('No_Development','Develop_Mussel','Develop_Finfish','Develop_Kelp'))
 
-
-
-
-# run_matlab_script(paste0(wkdir,'/MSP_Model/Scripts/Halibut_Model_2016/Halibut_tuner_free_params_v4.m'))
-#
-# # Insert the directory in which the model folder is located
-# model_directory <- '~/Desktop/Aquaculture_MSP_Model/'
-# # Insert directory in which MATLAB is located
-# matlab_directory <- '/Applications/MATLAB_R2016b.app/bin'
-#
-# # Run MSP tradeoff model in MATLAB
-# run_matlab_script('~/Desktop/Aquaculture_Paper/Code/TOA_AquaMSP_CrowCode_v1NaN.m')
-# run_matlab_script('~/Desktop/Aquaculture_Paper/Code/EFpayoffs_AquaMSP_CrowCode_v2.m')
-#
-# n.sector <- 7 # Number of sectors
-# epsilon <- 0.2 # Stepsize of sector weights
-#
-# t <- 10 # Time Horizon
-# r <- 0.05 # Discount rate
-#
-# # Load sector data calculated from sector-specific bioeconomic models
-#   df <- read.csv(file=paste0(model_directory,'Data/SeaGrant_data_complete_2015.csv'),stringsAsFactors=FALSE)
-#   fulldomain <- df$TARGET_FID # Model domain
-#   discount_factor <- 1/((1+r)^c(1:t))
-#   r_iy_aqua <- do.call(rbind, replicate(length(fulldomain), discount_factor, simplify=FALSE))
-# #### Calculate Responses (R) to Development Options
-# ## Sectors which higher responses increase value
-#   # Aquaculture
-#     Value.KM <- function(yield,upfront.cost,annual.cost,price){
-#       revenue <- do.call(cbind, replicate(t, yield * price, simplify=FALSE))
-#       cost <- cbind(upfront.cost + annual.cost,
-#         do.call(cbind, replicate(t - 1, annual.cost, simplify=FALSE)))
-#       profit <- (revenue - cost) * r_iy_aqua
-#       profit[profit < 0] <- 0
-#       NPV <- apply(profit, FUN = sum, MARGIN = 1)
-#       Annuity = (r*NPV)/(1-((1+r)^-t))
-#       return(list(NPV = NPV,Annuity = Annuity))
-#     }
-#     Value.F <- function(yield,costs,price){
-#       revenue <- do.call(cbind, replicate(t, yield * price, simplify=FALSE))
-#       cost <- df$fish.annual.operating.costs
-#       profit <- (revenue - cost) * r_iy_aqua
-#       profit[profit < 0] <- 0
-#       NPV <- apply(profit, FUN = sum, MARGIN = 1)
-#       Annuity = (r*NPV)/(1-((1+r)^-t))
-#       return(list(NPV = NPV,Annuity = Annuity))
-#     }
-#
-#     M <- Value.KM(df$mussel.yield,
-#       df$mussel.upfront.cost,
-#       df$mussel.annual.operating.cost,3.3)
-#     F <- Value.F(df$fish.yield,
-#       df$fish.upfront.cost,
-#       unique(df$fish.price[df$fish.price>0]))
-#     K <- Value.KM(df$kelp.yield,
-#       df$kelp.upfront.cost,
-#       df$kelp.annual.operating.cost,3)
-#
-#     # Remove unprofitable cells to give the raw
-#     Aqua.Full.Domain <- data.frame(M$Annuity,F$Annuity,K$Annuity)
-#     Aqua.Full.Domain.Logical <- apply(1 * (Aqua.Full.Domain > 0),FUN=sum,MARGIN=1) > 0
-#     # Aqua <- Aqua.Full.Domain[Aqua.Full.Domain.Logical,]
-#     M.V_n_i_p <- M$Annuity[Aqua.Full.Domain.Logical]
-#     F.V_n_i_p <- F$Annuity[Aqua.Full.Domain.Logical]
-#     K.V_n_i_p <- K$Annuity[Aqua.Full.Domain.Logical]
-#   # Halibut
-#   Halibut_10yrNPVi <- read.csv(file=paste0(model_directory,'Data/Target_FID_and_Yi_fulldomain_NPV_at_MSY_noAqua.csv'));
-#   names(Halibut_10yrNPVi) <- c('FID','Yi')
-#   H.NPV <- Halibut_10yrNPVi[Aqua.Full.Domain.Logical,2]
-#   H.V_n_i_p <- H.NPV
-# ## Sectors which higher responses decreases value
-#   # Viewshed
-#     F.Viewshed <- as.numeric(gsub(",", "", df$res_views_8k)) + as.numeric(gsub(",", "",df$park_views_8k))
-#     MK.Viewshed <- as.numeric(gsub(",", "", df$res_views_3k)) + as.numeric(gsub(",", "",df$park_view_3k))
-#     # Calculate R_max for viewshed for each developable site
-#     Vi <- apply(cbind(F.Viewshed,MK.Viewshed),MARGIN = 1, FUN = max)[Aqua.Full.Domain.Logical]
-#     # Find the maximum response across all sites
-#     V.R_max <- max(Vi)
-#     # Invert Finfish responses and Mussel/Kelp responses
-#     VF.V_n_i_p <- V.R_max - F.Viewshed[Aqua.Full.Domain.Logical]
-#     VMK.V_n_i_p <- V.R_max - MK.Viewshed[Aqua.Full.Domain.Logical]
-#   # Benthic
-#     Bi <- df$TOC.flux[F.NPV > 0]
-#     # Find the maximum response across all sites
-#     B.R_max <- max(Bi)
-#     # Invert Finfish responses and Mussel/Kelp responses
-#     B.V_n_i_p <- rep(0, times = length(which(Aqua.Full.Domain.Logical)))
-#     B.V_n_i_p[F.NPV[Aqua.Full.Domain.Logical] > 0] <- B.R_max - Bi
-#   # Disease
-#     ## Load disease connectivity matrix, which will be used as the adjacency matrix
-#     # for the disease propagation network
-#     disease_mat <- readMat(paste0(model_directory,'Data/disease_connect_matrix.mat'))$disease.connect.matrix
-#     # Remove all sites which cannot be developed for finfish
-#
-#     ## 12/29/16 differences between Matlab and R eigenvector centrality metrics
-#     disease_mat_finfish <- disease_mat[F$Annuity > 0,F$Annuity > 0]
-#     graph <- graph_from_adjacency_matrix(disease_mat_finfish,diag = T, weighted = T, mode = 'undirected')
-#     Di_compare <- eigen_centrality(graph, directed = T, weights = E(graph)$weight)$vector
-#     # plot(1:392,Di_compare/sum(Di_compare))
-#     # points(1:392,Di/sum(Di),col='red')
-#     Di <- read.csv(file = paste0(model_directory,'Data/Raw_Patch_Data.csv'))[F.NPV[Aqua.Full.Domain.Logical] > 0,7]
-#     # Find the maximum response across all sites
-#     D.R_max <- max(Di)
-#     # Invert Finfish responses and Mussel/Kelp responses
-#     D.V_n_i_p <- rep(0, times = length(which(Aqua.Full.Domain.Logical)))
-#     D.V_n_i_p[F.NPV[Aqua.Full.Domain.Logical] > 0] <- D.R_max - Di
-# ### Scale Sectors
-#   Scaling <- function(Sector){Scaled_Sector <- Sector / max(Sector)}
-#    M.X <- Scaling(M.V_n_i_p)
-#    F.X <- Scaling(F.V_n_i_p)
-#    K.X <- Scaling(K.V_n_i_p)
-#    H.X <- Scaling(H.V_n_i_p)
-#    VF.X <- Scaling(VF.V_n_i_p)
-#    VMK.X <- Scaling(VMK.V_n_i_p)
-#    D.X <- Scaling(D.V_n_i_p)
-#
-#   Scaled_Data <- data.frame(M_X = M.X, F_X = F.X, K_X = K.X,
-#     H_X = H.X, VF_X = VF.X, VMK_X = VMK.X, D_X = D.X)
-# ## Analyze data to make extract all values
-# # Load old version results
-# raw_values.df <- read.csv('~/Desktop/CrowTOv1/Raw_Patch_Data.csv')
-# names(raw_values.df) <- c('M','F','K','H','V_F','V_MK','B','D')
-# write.csv(file = '~/Desktop/Aquaculture_Paper/Code/Raw_Patch_Data.csv',raw.annuities)
-#
-# data.df <- read.csv(file='~/Desktop/Code/MSP Planning Results April 2016/Dynamic_Values_Export.csv',header=F)
-# names(data.df) <- c('M','F','K','H','V','B','D')
-# plans.df <- read.csv(file='~/Desktop/Code/MSP Planning Results April 2016/Static_plans.csv',header=F)
-#
-# # Conventional Models
-# Unconstrained_data <- read.csv(file='~/Desktop/Code/MSP Planning Results April 2016/Unconstrained_Dynamic_Values_April.csv',header=F)
-# names(Unconstrained_data)=c('Mussel','Finfish','Kelp','Halibut','Viewshed','Benthic','Disease')
-# Constrained_data <- read.csv(file='~/Desktop/Code/MSP Planning Results April 2016/Constrained_Dynamic_Values_April.csv',header=F)
-# names(Constrained_data)=c('Mussel','Finfish','Kelp','Halibut','Viewshed','Benthic','Disease')
-#
-# monetry_values.df <- data.frame(M = data.df$M * sector_totals.df[1],
-#   F = data.df$F * sector_totals.df[2],
-#   K = data.df$K * sector_totals.df[3],
-#   H = data.df$H * sector_totals.df[4])
-# # Conversion of NPV to equivalent annuity
-# # Calculate annuities
-# annuities <- monetry_values.df %>% mutate(M = (r*M)/(1-((1+r)^-t)),
-#                 F = (r*F)/(1-((1+r)^-t)),
-#                   K = (r*K)/(1-((1+r)^-t)),
-#                   H = (r*H)/(1-((1+r)^-t)))
-# # Calculate the annuitiy for > 25% of Mussel and loss of annuity of less than 1%
-# data.df %>% filter(M > .25, 1 - H < .01) %>% select(M,H) %>%
-#       mutate(M = M * sector_totals.df[1],H = (1-H) * sector_totals.df[4])
-#
-# # Calculate the case study
-# Case_Study.df <- data.df %>% mutate(ID = 1:nrow(data.df)) %>% filter(M >= .05, F >= .05, K >= .05, H >= .95, V >= .95, B >= .95, D >= .95)
-# Case_Study.df[576,] %>% select(M,F,K) %>% mutate(M = M * sector_totals.df[1], F = F * sector_totals.df[2], K = K * sector_totals.df[3])
-# summary(factor(plans.df[,Case_Study.df$ID[576]]))
-#
-# # Calculate sector differences
-# color.vector=c(rep('coral',length.out=nrow(data.df)),rep('purple',length.out=1061),rep('green',length.out=1061))
-#  panel.EF<-function(x, y, itor=0, epsilon=.001, bg = NA, pch = 20, cex = .01, ...)
-#   {
-#     x.MSP=x[color.vector=='coral']
-#     y.MSP=y[color.vector=='coral']
-#
-#     # points(x.MSP,y.MSP, pch = 16, col = alpha("lightblue1",1/100),cex = cex)
-#     x.U=x[color.vector=='purple']
-#     y.U=y[color.vector=='purple']
-#     x.S=x[color.vector=='green']
-#     y.S=y[color.vector=='green']
-#     x.EF=NULL
-#     y.EF=NULL
-#     alpha.mat.tmp=seq(from=0,by=epsilon,to=1)
-#     # MSP
-#     for(itor in 1:length(alpha.mat.tmp)){
-#       alpha.tmp=alpha.mat.tmp[itor]
-#       A=(alpha.tmp*x.MSP)+((1-alpha.tmp)*y.MSP)
-#       I=which(A==max(A))
-#       x.EF[itor]=max(unique(x.MSP[I]))
-#       I.tmp.x=which(x.MSP==max(unique(x.MSP[I])))
-#       I.tmp.y=which(y.MSP[I.tmp.x]==max(unique(y.MSP[I.tmp.x])))
-#       y.EF[itor]=unique(y.MSP[I.tmp.x[I.tmp.y]])}
-#     x.EF.original=x.EF;y.EF.original=y.EF;
-#     if(length(unique(x.EF.original))!=1&length(unique(x.EF.original))!=1){
-#       EF.inter=approx(x.EF.original,y=y.EF.original,n=length(alpha.mat.tmp))
-#       x.EF=EF.inter$x;y.EF=EF.inter$y;
-#     }else{
-#     }
-#     # lines(sort(x.EF),y.EF[order(x.EF)],col="midnightblue",lwd=2,lty=1)
-#     # lines(sort(x.U),y.U[order(x.U)],col = "mediumorchid1",lwd=2,lty=1)
-#     # lines(sort(x.S),y.S[order(x.S)],col = "coral1",lwd=2,lty=1)
-#     return(cbind(x.EF,y.EF))
-#   }
-#
-# M_H.EF <- data.frame(panel.EF(data.df$M,data.df$H)) %>%
-#     mutate(M_raw.EF = x.EF * sector_totals.df[1],
-#     H_raw.EF = y.EF * sector_totals.df[4])
-# M_H.S <- data.frame(Constrained_data[,1], Constrained_data[,4], Constrained_data[,1] * sector_totals.df[1], Constrained_data[,4] * sector_totals.df[4])
-# names(M_H.S) <- c('M.percentage', 'H.percentage', 'M.annuity', 'H.annuity')
-#
-# M_H.EF %>% filter(x.EF == .440)
-# tail(M_H.S)
-#
-#
-# # Load Scenario Data
-# # print('Loading Data........')
-# # V1_JS.data <- read.csv(file = '~/Desktop/Code/V1_Policy_JS.csv',header = F)
-# # V2_JS.data <- read.csv(file = '~/Desktop/Code/V2_Policy_JS.csv',header = F)
-# # V2_CW.data <- read.csv(file = '~/Desktop/Code/V2_Policy_CW.csv',header = F)
-#
-# # freq_scenario <- function(data){
-# #   List.Data <- list()
-# #   fx.t <- proc.t()
-# #   print('This may take a while...........')
-# #   for(index in 1:ncol(data)){
-# #     if(index %in% seq(from = 0, to = ncol(data), by = 10000)){
-# #       print(index)
-# #       ptm <- proc.t()
-# #     }
-# #     tab.tmp <- data.frame(table(factor(data[,index],
-# #       levels = c(1:4),
-# #       labels = c('No Development','Mussel','Finfish','Kelp'))))
-# #     names(tab.tmp) <- c('Policy','Frequency')
-# #     list.name <- paste("Scenario_", index, sep="")
-# #     List.Data[[list.name]] <- tab.tmp %>% mutate(Scenario = rep(index,ts = length(tab.tmp)))
-# #   }
-# #   new.data <- rbindlist(List.Data)
-# #   if(index %in% seq(from = 0, to = ncol(data), by = 10000)){
-# #      return(print(proc.t()-ptm))
-# #   }
-# #   print(paste('t elapsed',proc.t() - fx.t))
-# #   return(new.data)
-# # }
-# # print('Arranging Data........')
-# # SW_Version.df <- freq_scenario(V1_JS.data) %>% mutate(Version = 'Old Approach')
-# # JS_Version.df <- freq_scenario(V2_JS.data) %>% mutate(Version = 'New Approach JS')
-# # CW_Version.df <- freq_scenario(V2_CW.data) %>% mutate(Version = 'New Approach CW')
-#
-# # # Combine all
-# # Version.df <- bind_rows(SW_Version.df %>% mutate(Version = 'Old Approach'),
-# #     JS_Version.df %>% mutate(Version = 'New Approach JS'),
-# #     CW_Version.df %>% mutate(Version = 'New Approach CW'))
-#
-# # head(Version.df %>% filter(Version == 'Old Approach'))
-# # head(Version.df %>% filter(Version == 'New Approach JS'))
-# # head(Version.df %>% filter(Version == 'New Approach CW'))
-# # # Plots to compare percentage
-# # png(filename = '~/Desktop/Code/Compare.png')
-# # Version.df %>% ggplot(aes(x = Scenario, y = Frequency)) +
-# #   geom_line(aes(colour = Policy)) +
-# #   facet_grid(Version~.) +
-# #   theme_minimal()
-# # dev.off()
-#
-# # write.csv(file = '~/Desktop/Code/Version.csv',Version.df)
-#
-#
-#
-#
-#
-# # ## Figures
-# # This is the most concise figure script, created 12/28/16 by JS
-# # Makes all five primary figures for MSP Aquaculture Paper
-# # Uses maps created by Becca Gentry in GIS
-# current.directory.data <- paste0(model_directory,'Data')
-# ## Figure dimensions
-# width=7
-# height=5.5
-# res=2400
-# units='in'
-# ## Set Directory
-# cols <- c("Mussel"="Blue","Finfish"="Salmon","Kelp"="Green","Halibut"="Burlywood","Viewshed"='Cyan',"Benthic"='Orange',"Disease"='Black')
-# text.size<-12
-# patch.size=1.5
-# aMatrix <- read.csv(file='~/Desktop/Code/MSP Planning Results April 2016/aMatrix.csv',header=F)
-# # Static.plans.data <- read.csv(file='Static_plans.csv',header=F)
-# Static.values.data <- read.csv(file='~/Desktop/Code/MSP Planning Results April 2016/Dynamic_Values_Export.csv',header=F)
-# colnames(Static.values.data)=c('Mussel','Finfish','Kelp','Halibut','Viewshed','Benthic','Disease')
-# # Static.plans.case.study.data <- read.csv(file='~/Desktop/Code/MSP Planning Results April 2016/April Results/Static_plans_case_study.csv',header=F)
-# # Static.values.case.study.data <- read.csv(file='~/Desktop/Code/MSP Planning Results April 2016/Static_values_case_study.csv',header=F)
-# # Static.percentage.case.study.data <- read.csv('~/Desktop/Code/MSP Planning Results April 2016/Static_percentage_case_study.csv',header=F)
-# # colnames(Static.values.data)=c('Mussel','Finfish','Kelp','Halibut','Viewshed','Benthic','Disease')
-# # colnames(Static.values.case.study.data)=c('Mussel','Finfish','Kelp','Halibut','Viewshed','Benthic','Disease')
-# # data.MSP = list(aMatrix = aMatrix,Static.plans = Static.plans.data,Static.plans.case.study = Static.plans.case.study.data,
-# #               Static.values.case.study = Static.values.case.study.data,Static.percentage.case.study = Static.percentage.case.study.data)
-# # Case Study Stuff
-# I<-which(Static.values.data$Mussel>=.05&Static.values.data$Finfish>=.05&Static.values.data$Kelp>=.05&
-#                            Static.values.data$Halibut>=.95&Static.values.data$Viewshed>=.95&Static.values.data$Benthic>=.95&
-#                            Static.values.data$Disease>=.95)
-# df <- read.csv(file='~/Desktop/Code/SeaGrant_data_complete_2015.csv',stringsAsFactors=FALSE)
-# V1 <- read.csv(file='~/Desktop/Code/V1.csv',header=FALSE)
-# names(df)
-# paste('Cheapest Mussel Farm Costs',df %>% filter(V1 == 1) %>%
-#   select(mussel.annual.operating.costs) %>%
-#   filter(mussel.annual.operating.costs > 0) %>% arrange(mussel.annual.operating.costs) %>% filter(mussel.annual.operating.costs == min(mussel.annual.operating.costs)),'annually')
-#
-# # Case.Study.August <- read.csv(file='Case Study August.csv',header=F)
-# # Static.values.data[I[576],]
-# # summary(factor(Static.plans.data[,I[576]]))
-# # Conventional Models
-# Unconstrained_data <- read.csv(file='~/Desktop/Code/MSP Planning Results April 2016/Unconstrained_Dynamic_Values_April.csv',header=F)
-# names(Unconstrained_data)=c('Mussel','Finfish','Kelp','Halibut','Viewshed','Benthic','Disease')
-# Constrained_data <- read.csv(file='~/Desktop/Code/MSP Planning Results April 2016/Constrained_Dynamic_Values_April.csv',header=F)
-# names(Constrained_data)=c('Mussel','Finfish','Kelp','Halibut','Viewshed','Benthic','Disease')
-#
-# # Unconstrained_data <- read.csv(file='Unconstrained_Static_Values_April.csv',header=F)
-# # names(Unconstrained_data)=c('Mussel','Finfish','Kelp','Halibut','Viewshed','Benthic','Disease')
-# # Constrained_data <- read.csv(file='Constrained_Static_Values_April.csv',header=F)
-# # names(Constrained_data)=c('Mussel','Finfish','Kelp','Halibut','Viewshed','Benthic','Disease')
-#
-# # Pure Profit Conventional Models
-# # Unconstrained.Pure.Profit.data <- read.csv(file='Pure_Profit_Unconstrained_Dynamic_Values_April.csv',header=F)
-# # names(Unconstrained.Pure.Profit.data)=c('Mussel','Finfish','Kelp','Halibut','Viewshed','Benthic','Disease')
-# # Constrained.Pure.Profit.data <- read.csv(file='Pure_Profit_Constrained_Dynamic_Values_April.csv',header=F)
-# # names(Constrained.Pure.Profit.data)=c('Mussel','Finfish','Kelp','Halibut','Viewshed','Benthic','Disease')
-# Master.matrix.max=rbind(Static.values.data,Unconstrained_data,Constrained_data)
-# names(Master.matrix.max)<-c('Mussel','Finfish','Kelp','Halibut','Viewshed','Benthic','Disease')
-# color.vector.max=c(rep('coral',length.out=nrow(Static.values.data)),rep('purple',ts=nrow(Unconstrained_data)),rep('green',ts=nrow(Constrained_data)))
-#
-# # Calculate new annuity values
-# raw_values.df <- read.csv('~/Desktop/CrowTOv1/Raw_Patch_Data.csv')
-# names(raw_values.df) <- c('M','F','K','H','V_F','V_MK','B','D')
-# r <- 0.05
-# t <- 10
-# sector_totals.df <- apply(raw_values.df %>% select(M,F,K,H) %>%
-#   mutate(M = (r*M)/(1-((1+r)^-t)),
-#                 F = (r*F)/(1-((1+r)^-t)),
-#                   K = (r*K)/(1-((1+r)^-t)),
-#                   H = (r*H)/(1-((1+r)^-t))),MARGIN=2,FUN = sum)
-# raw.annuities <- raw_values.df %>% select(M,F,K,H,V_F,V_MK,B,D) %>%
-#   mutate(M = (r*M)/(1-((1+r)^-t)),
-#                 F = (r*F)/(1-((1+r)^-t)),
-#                   K = (r*K)/(1-((1+r)^-t)),
-#                   H = (r*H)/(1-((1+r)^-t)))
-# M_group <- gsub(paste(c('\\(','\\]'),collapse = '|'),'',
-#   names(split(raw.annuities$M,cut(raw.annuities$M,seq(min(raw.annuities$M[which(raw.annuities$M > 0)]),
-#     max(raw.annuities$M),length.out=9)))))
-# F_group <- gsub(paste(c('\\(','\\]'),collapse = '|'),'',
-#   names(split(raw.annuities$F,cut(raw.annuities$F,seq(min(raw.annuities$F[which(raw.annuities$F > 0)]),
-#     max(raw.annuities$F),length.out=9)))))
-# K_group <- gsub(paste(c('\\(','\\]'),collapse = '|'),'',
-#   names(split(raw.annuities$K,cut(raw.annuities$K,seq(min(raw.annuities$K[which(raw.annuities$K > 0)]),
-#     max(raw.annuities$K),length.out=9)))))
-# #### Plot Data
+X_n_i_p <- setNames(lapply(1:p, df = V_n_i_p, FUN = function(p,df){
+      return(setNames(data.frame(t(do.call('rbind',lapply(1:length(true_sector_names), FUN = function(n){
+        df[[p]][,n] / sum(apply(sapply(df,"[", ,n),MARGIN = 1, FUN = function(z){ifelse(!all(is.na(z)),max(z, na.rm = T),NA)}),na.rm = T)
+      })))),true_sector_names))
+  }),c('No_Development','Develop_Mussel','Develop_Finfish','Develop_Kelp'))
+# Create the sector weights (alpha's)
+library(gtools)
+epsilon <- .20 # Epsilon step size, default is 0.20
+a_values <- seq(from = 0, to = 1, by = epsilon) # The unique values for each sector and site
+a <- permutations(n = length(a_values),7,a_values,repeats.allowed=T)
+# Find the optimal policy option for each site in a given, alpha
+if(readline('Perform Full Analysis? Y/N ') == 'Y'){
+  print('Finding optimal solutions.................')
+  print_a <- seq(from = 0, to = nrow(a), by = 10000)
+  obj_i <- sapply(1:nrow(a), FUN = function(x){
+    if(x %in% print_a){print(paste0(x,' iterations'))}
+    apply(sapply(1:p, df = X_n_i_p, FUN = function(y,df){
+      apply(data.frame(mapply('*',df[[y]],c(a[x,]),SIMPLIFY = FALSE)), MARGIN = 1, FUN = function(z) sum(z,na.rm = T)) # Multiply each i for a given p by the sector specific weight set by a given row of the alpha matrix
+      }),MARGIN = 1, which.max) - 1
+  })
+  # # Save model results
+  write.table(x = data.frame(obj_i,stringsAsFactors = F),file = file.path(paste0(fdirs$outdatadir,'MSP_Planning_Results.csv')), sep = ",",quote = FALSE, col.names = FALSE, row.names = FALSE)
+}else{
+  print('loading planning results')
+  obj_i <- read.csv(file.path(paste0(fdirs$outdatadir,'MSP_Planning_Results.csv')))
+}
+# Convert the plans to actual values1
+# Add aquaculture indices information
+Aqua_Dev_Indices = which(Aqua.Full.Domain.Logical)
+writeMat(paste0(fdirs$inpdatadir,'Aqua_Dev_Indices.mat'),Aqua_Dev_Indices = which(Aqua.Full.Domain.Logical))
+# Load Halibut Model
+print("Launching MATLAB.....");
+system2(matlab_root,
+  args = c('-r',
+  paste0("run\\(\\'",fdirs$scrpdir,"Dynamic_Evaluation_Files/SCB_MSP_Dynamic.m\\'\\)")))
+# # Plot Data
 # current.directory.scripts='~/Desktop/Code/MS Figures/'
 # setwd(current.directory.scripts)
 # theme = theme(plot.margin = unit(c(.2,.2,.2,.2), units = "lines"),
@@ -1138,7 +939,7 @@ D.V_n_i_p[F.NPV[Aqua.Full.Domain.Logical] > 0] <- D.R_max - Di
 # #   #   lines(sort(x.S),y.S[order(x.S)],col = "coral1",lwd=2,lty=1)
 # #   # }
 # #   #   pdf.options(width = 8, height = 6.4)
-#
+# #
 # #   # source('pairs2.R')
 # # # for(itor in 1:2){
 # # #   if(itor==1){
@@ -1164,7 +965,7 @@ D.V_n_i_p[F.NPV[Aqua.Full.Domain.Logical] > 0] <- D.R_max - Di
 # #   title(ylab='[%] of Maximum')
 # # dev.off()#}
 # # beep()
-#
+# #
 # # source('figure_S28_code.R')
 # #   MSP.value.data=rbind(Mussel.value.tmp,Finfish.value.tmp,Kelp.value.tmp)
 # #   MSP.value.data.points=rbind(Mussel.value.tmp.points,Finfish.value.tmp.points,Kelp.value.tmp.points)
@@ -1186,7 +987,7 @@ D.V_n_i_p[F.NPV[Aqua.Full.Domain.Logical] > 0] <- D.R_max - Di
 # #     theme_bw(base_size = 15)+theme(panel.grid=element_blank(),legend.position="bottom")
 # #   Fig_S10<-Value.of.MSP.grid.plot+theme(axis.title=element_text(size=12),panel.spacing = unit(1, "lines"),
 # #                                strip.background=element_rect(fill='white'),strip.text=element_text(size=10),axis.ticks.margin=unit(1,'lines'))
-#
+# #
 # #   for(itor in 1:2){
 # #     if(itor==1){
 # #       png('Fig S10.png',width=8, height=8,res=res,units=units)

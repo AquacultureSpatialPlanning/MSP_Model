@@ -15,7 +15,7 @@ axis tight
 % xlabel('Latitude')
 % ylabel('Longitude')
 title('Biomass [kg]')
-set(gcf,'color','white');
+set(gcf,'color','white'); 
 plot(msp_domain(:,1),msp_domain(:,2),'k','linewidth',coastlinewidth) %coastline
 set(gca,'XTickLabel','')
 set(gca,'YTickLabel','')
@@ -31,7 +31,7 @@ axis tight
 % xlabel('Latitude')
 % ylabel('Longitude')
 title('Yield [kg]')
-set(gcf,'color','white');
+set(gcf,'color','white'); 
 plot(msp_domain(:,1),msp_domain(:,2),'k','linewidth',coastlinewidth) %coastline
 set(gca,'XTickLabel','')
 set(gca,'YTickLabel','')
@@ -47,9 +47,9 @@ axis tight
 % xlabel('Latitude')
 % ylabel('Longitude')
 title('Equil. profit [$]')
-set(gcf,'color','white');
+set(gcf,'color','white'); 
 plot(msp_domain(:,1),msp_domain(:,2),'k','linewidth',coastlinewidth) %coastline
 set(gca,'XTickLabel','')
 set(gca,'YTickLabel','')
 
-savefig(strcat(output_figure_dir,'Biomass_Yield_Profit_panelplot'))
+savefig('Biomass_Yield_Profit_panelplot')
