@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-# NOTE: MATLAB requires 'Mapping Toolbox', 'Bioinformatics', 'Parallel Optimization'
-# Set current working directory as a string
-wkdir <- getwd()
-=======
 # MATLAB requires 'Mapping Toolbox', 'Bioinformatics', 'Parallel Optimization'
 # Set current working directory as a string
 # fdirs$home <- "~/MSP_Model/"
@@ -11,7 +6,6 @@ wkdir <- getwd()
 # fdirs$inpfigdir <- "~/MSP_Model/Input/Figures/"
 # fdirs$outdatadir <- "~/MSP_Model/Output/Data/"
 # fdirs$outfigdir <- "~/MSP_Model/Output/Figures/"
->>>>>>> 6db92178a3ff2a1c0842405cba87cc48775d5ab5
 # Load necessary R libraries. For the function R_Libraries, enter T if this is the first time running the model. This will
 # install all of the necessary libraries and load them into the
 # current workspace.
@@ -23,7 +17,7 @@ n.sector <- 7 # Number of sectors
 epsilon <- 0.2 # Stepsize of sector weights
 t <- 10 # Time Horizon
 r <- 0.05 # Discount rate
-paste0(
+
 # Read sector data
 sector_data.df <- read.csv(paste0(fdirs$inpdatadir,'SeaGrant_data_complete_2015.csv'))
 fulldomain <- sector_data.df$TARGET_FID # Model domain
@@ -82,97 +76,6 @@ K.V <- K$Annuity[Aqua.Full.Domain.Logical]
 
 # Run the Halibut fishing model and then load the results
 if(readline("Run halibut model or load results Y/N? ") == 'Y'){
-<<<<<<< HEAD
-  print("Launching MATLAB.....");
-  system2('/Applications/MATLAB_R2016b.app/bin/matlab',
-    args = c('-nodesktop','-noFigureWindows','-nosplash','-r',
-    "run\\(\\'~/MSP_Model/Scripts/Halibut/Tuner_free_params_v4.m\\'\\)"))
-  # run_matlab_script(paste0(wkdir,'/MSP_Model/Scripts/Halibut/Tuner_free_params_v4.m'))
-}
-H <- read_excel(paste0(wkdir,'/MSP_Model/Output/Target_FID_and_Yi_fulldomain_NPV_at_MSY_noAqua.xlsx'))
-
-# Load Viewshed Data
-F.Viewshed <- as.numeric(gsub(",", "", sector_data.df$res_views_8k)) + as.numeric(gsub(",", "",sector_data.df$park_views_8k))
-MK.Viewshed <- as.numeric(gsub(",", "", sector_data.df$res_views_3k)) + as.numeric(gsub(",", "",sector_data.df$park_view_3k))
-
-# Load Benthic Data
-Bi <- df$TOC.flux[F.V_n_i_p > 0]
-
-# Run the eigenvector centrality diseaase model in MATLAB and then load the results.
-# Write a .mat file with the filtered connectivity matrix
-filename <- paste(tempfile(tmpdir = paste0(wkdir,'/MSP_Model/Input/Data/')),".mat",sep="")
-writeMat(filename,
-eig = readMat(paste0(wkdir,
-  '/MSP_Model/Input/Data/disease_connect_matrix.mat'))$disease.connect.matrix[F$Annuity > 0,F$Annuity > 0])
-# Character vector to send to MATLAB from R. The function eigencentrality is derived from http://strategic.mit.edu/downloads.php?page=matlab_networks
-code <- c("cd(strcat(pwd,\'/MSP_Model/Scripts/\'));",paste0('load \'',filename,'\';'),'d = abs(eigencentrality(eig));',
-'save(\'tmp.mat\',\'d\')')
-# Send arguments to matlab
-run_matlab_code(code)
-# Read the Mat file and remove the temporary one
-D <- readMat(paste0(wkdir,'/MSP_Model/Scripts/tmp.mat'))$d
-system2('rm',args = paste0(wkdir,'/MSP_Model/Scripts/tmp.mat'))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Calculate R_max for viewshed for each developable site
-Vi <- apply(cbind(F.Viewshed,MK.Viewshed),MARGIN = 1, FUN = max)[Aqua.Full.Domain.Logical]
-# Find the maximum response across all sites
-V.R_max <- max(Vi)
-# Invert Finfish responses and Mussel/Kelp responses
-VF.V_n_i_p <- V.R_max - F.Viewshed[Aqua.Full.Domain.Logical]
-VMK.V_n_i_p <- V.R_max - MK.Viewshed[Aqua.Full.Domain.Logical]
-## Load Benthic Data
-Bi <- df$TOC.flux[F.NPV > 0]
-# Find the maximum response across all sites
-B.R_max <- max(Bi)
-# Invert Finfish responses and Mussel/Kelp responses
-B.V_n_i_p <- rep(0, times = length(which(Aqua.Full.Domain.Logical)))
-B.V_n_i_p[F.NPV[Aqua.Full.Domain.Logical] > 0] <- B.R_max - Bi
-# Disease
-## Load disease connectivity matrix, which will be used as the adjacency matrix
-# for the disease propagation network
-disease_mat <- readMat(paste0(wkdir,'/MSP_Model/Input/Data/disease_connect_matrix.mat'))$disease.connect.matrix
-# Remove all sites which cannot be developed for finfish
-disease_mat_finfish <- disease_mat[F$Annuity > 0,F$Annuity > 0]
-system2('/Applications/MATLAB_R2016b.app/bin/matlab',
-  args = c('-nodesktop','-noFigureWindows','-nodisplay','-nosplash',
-  '-r \\"try, r'))
-graph <- graph_from_adjacency_matrix(disease_mat_finfish, weighted = T, mode = 'undirected')
-Di_compare <- eigen_centrality(graph, directed = F, weights = E(graph)$weight)$vector
-# plot(1:392,Di_compare/sum(Di_compare))
-# points(1:392,Di/sum(Di),col='red')
-Di <- read.csv(file = paste0(model_directory,'Data/Raw_Patch_Data.csv'))[F.NPV[Aqua.Full.Domain.Logical] > 0,7]
-# Find the maximum response across all sites
-D.R_max <- max(Di)
-# Invert Finfish responses and Mussel/Kelp responses
-D.V_n_i_p <- rep(0, times = length(which(Aqua.Full.Domain.Logical)))
-D.V_n_i_p[F.NPV[Aqua.Full.Domain.Logical] > 0] <- D.R_max - Di
-## Load Benthic Data
-## Disease Model
-
-## Invert impacted sector values
-## Scale annuities for all sectors
-## Run MSP Model
-## Run Dynamic Halibut Model
-## Plot Results
-
-
-=======
   system2(matlab_root,
     args = c('-nodesktop','-noFigureWindows','-nosplash','-r',
     paste0("run\\(\\'",fdirs$scrpdir,"Halibut/Tuner_free_params_v4.m\\'\\)")))
@@ -182,7 +85,6 @@ H.V  <- (r*read.csv(paste0(fdirs$outdatadir,'Target_FID_and_Yi_fulldomain_NPV_at
 # Load Viewshed Data
 V_F.V <- (as.numeric(gsub(",", "", sector_data.df$res_views_8k)) + as.numeric(gsub(",", "",sector_data.df$park_views_8k)))[Aqua.Full.Domain.Logical]
 V_MK.V  <- (as.numeric(gsub(",", "", sector_data.df$res_views_3k)) + as.numeric(gsub(",", "",sector_data.df$park_view_3k)))[Aqua.Full.Domain.Logical]
->>>>>>> 6db92178a3ff2a1c0842405cba87cc48775d5ab5
 
 # Load Benthic Data, for cells which are not developable for fish aqua set to NA
 B.V <- rep(NA,times = length(F.V))

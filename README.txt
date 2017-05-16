@@ -1,7 +1,7 @@
 Requirements
 1.) This folder must be put into the root folder (i.e. '~' in OSX and C:/ in Windows)
 2.) Both MATLAB and R must be installed
-3.) MATLAB must be installed with the Parallel Optimization Toolbox
+3.) MATLAB must be installed with the following Toolbox Mapping Toolbox,Bioinformatics,Parallel Optimization
 
 Instructions
 1.) Clone repository into root directory
