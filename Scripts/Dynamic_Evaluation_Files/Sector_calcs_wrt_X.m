@@ -1,4 +1,4 @@
-function [Halibut_Yi_tmp]=Sector_calcs_wrt_X(X,discount_rate_iy,input_data_dir,target_fid_fulldomain,Aqua_Dev_Indices,SQ_1fishable_0notfishable_for_each_soft_depth_patch_ORIGINAL,Nij_initial_msy_TS,x0_PPUE_msy_TS,Fsum_msy,target_fid_hab_depth,Wij,numpatches,max_age,T,delta,age_legal,age_mature,Dii,alphaCR,beta_i,habitat_area_i,theta,price,gammatmp,distance_to_port_for_each_soft_depth_patch,Mii,age_move,discount_rate_iy);
+function [Halibut_Yi_tmp]=Sector_calcs_wrt_X(X,input_data_dir,target_fid_fulldomain,Aqua_Dev_Indices,SQ_1fishable_0notfishable_for_each_soft_depth_patch_ORIGINAL,Nij_initial_msy_TS,x0_PPUE_msy_TS,Fsum_msy,target_fid_hab_depth,Wij,numpatches,max_age,T,delta,age_legal,age_mature,Dii,alphaCR,beta_i,habitat_area_i,theta,price,gammatmp,distance_to_port_for_each_soft_depth_patch,Mii,age_move,discount_rate_iy);
   X_domain=zeros(size(target_fid_fulldomain));
   X_domain(Aqua_Dev_Indices)=X';
   %% Halibut
