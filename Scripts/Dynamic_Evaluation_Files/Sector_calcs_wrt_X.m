@@ -12,6 +12,9 @@ function [Halibut_Yi_tmp]=Sector_calcs_wrt_X(X,input_data_dir,target_fid_fulldom
   x0_PPUE_initial=x0_PPUE_msy_TS;
   Fsum=Fsum_msy; %TAE (fleet model) <-Assuming no change in management, only in fishery distribution.
   BasicSpatialHarvestModel_COREv1_fleet_TS
-  Yi_wrt_alpha=sum(Yiy,2); %sum years together to calc NPV for each patch
+  discount_factor=1./((1+0.05).^[1:10]);
+  discount_rate_iy=repmat((1./((1+0.05).^[1:10])),size(Yiy,1));
+  Yiy_NPV=Yiy.*(repmat((1./((1+0.05).^[1:10])),size(Yiy,1))); %multiply year and patch specific values by discounted value
+  Yi_wrt_alpha=sum(Yiy_NPV,2); %sum years together to calc NPV for each patch
   Halibut_Yi_tmp=sum(Yi_wrt_alpha);
 end
