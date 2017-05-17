@@ -2,7 +2,9 @@
 # Load necessary libraries
 setwd('MSP_Model/')
 source('R_Libraries.r')
-R_Libraries(FALSE) # After the first initial run this can be set to F
+choice <- ifelse(readline(prompt = 'Install? y/n') == 'Y',TRUE,FALSE)
+print(choice)
+R_Libraries(choice) # After the first initial run this can be set to F
 # Make a new environment:
 fdirs <- new.env()
 
