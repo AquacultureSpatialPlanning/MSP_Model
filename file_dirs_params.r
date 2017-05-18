@@ -60,12 +60,12 @@ if(!grepl("windows", fdirs$computeros)){
 # Load model
 setwd(fdirs$home)
 # Where is matlab?
-input <- readline(prompt = "Where is MATLAB located? (Default location on OSX: /Applications/MATLAB_R2016b.app/bin/matlab ")
-if(input == ""){
+#input <- readline(prompt = "Where is MATLAB located? (Default location on OSX: /Applications/MATLAB_R2016b.app/bin/matlab ")
+#if(input == ""){
 	print("Setting MATLAB location to /Applications/MATLAB_R2016b.app/bin/matlab")
-	matlab_root <- "/Applications/MATLAB_R2016b.app/bin/matlab"
-}else{
-	print(paste0("Setting MATLAB location to ",input))
-	matlab_root <- input
-}
+	matlab_root <- "/Applications/MATLAB_R2016a.app/bin/matlab"
+###}#else{
+	#print(paste0("Setting MATLAB location to ",input))
+	#matlab_root <- input
+#}
 source(paste0(fdirs$scrpdir,'SCB_MSP_Model.r'))
