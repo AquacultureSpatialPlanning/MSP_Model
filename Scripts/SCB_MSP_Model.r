@@ -200,10 +200,10 @@ a <- permutations(n = length(a_values),7,a_values,repeats.allowed=T)
 Aqua_Dev_Indices = which(Aqua.Full.Domain.Logical)
 writeMat(paste0(fdirs$inpdatadir,'Aqua_Dev_Indices.mat'),Aqua_Dev_Indices = which(Aqua.Full.Domain.Logical))
 # Load Halibut Model
-print("Launching MATLAB.....");
-system2(matlab_root,
-  args = c('-r',
-  paste0("run\\(\\'",fdirs$scrpdir,"Dynamic_Evaluation_Files/SCB_MSP_Dynamic.m\\'\\)")))
+# print("Launching MATLAB.....");
+# system2(matlab_root,
+  # args = c('-r',
+  # paste0("run\\(\\'",fdirs$scrpdir,"Dynamic_Evaluation_Files/SCB_MSP_Dynamic.m\\'\\)")))
 # # Plot Data
 # current.directory.scripts='~/Desktop/Code/MS Figures/'
 # setwd(current.directory.scripts)
