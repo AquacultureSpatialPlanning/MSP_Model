@@ -1,6 +1,7 @@
 load('file_dir_params.mat')
 prompt_comp='Run Dynamic compiler(Y) or load date(N)? = ';
-str=input(prompt_comp,'s');
+% str=input(prompt_comp,'s');
+str='Y';
 if strcmp(str,'Y')
     % Load Directories
     pathtool

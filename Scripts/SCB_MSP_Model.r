@@ -75,11 +75,11 @@ F.V <- F$Annuity[Aqua.Full.Domain.Logical]
 K.V <- K$Annuity[Aqua.Full.Domain.Logical]
 
 # Run the Halibut fishing model and then load the results
-if(readline("Run halibut model or load results Y/N? ") == 'Y'){
+# if(readline("Run halibut model or load results Y/N? ") == 'Y'){
   system2(matlab_root,
     args = c('-nodesktop','-noFigureWindows','-nosplash','-r',
     paste0("run\\(\\'",fdirs$scrpdir,"Halibut/Tuner_free_params_v4.m\\'\\)")))
-}
+# }
 H.V  <- (r*read.csv(paste0(fdirs$outdatadir,'Target_FID_and_Yi_fulldomain_NPV_at_MSY_noAqua.csv'),header=FALSE)[,2][Aqua.Full.Domain.Logical])/(1-((1+r)^-t))
 
 # Load Viewshed Data
@@ -180,7 +180,7 @@ epsilon <- .20 # Epsilon step size, default is 0.20
 a_values <- seq(from = 0, to = 1, by = epsilon) # The unique values for each sector and site
 a <- permutations(n = length(a_values),7,a_values,repeats.allowed=T)
 # Find the optimal policy option for each site in a given, alpha
-if(readline('Perform Full Analysis? Y/N ') == 'Y'){
+# if(readline('Perform Full Analysis? Y/N ') == 'Y'){
   print('Finding optimal solutions.................')
   print_a <- seq(from = 0, to = nrow(a), by = 10000)
   obj_i <- sapply(1:nrow(a), FUN = function(x){
@@ -191,10 +191,10 @@ if(readline('Perform Full Analysis? Y/N ') == 'Y'){
   })
   # # Save model results
   write.table(x = data.frame(obj_i,stringsAsFactors = F),file = file.path(paste0(fdirs$outdatadir,'MSP_Planning_Results.csv')), sep = ",",quote = FALSE, col.names = FALSE, row.names = FALSE)
-}else{
-  print('loading planning results')
-  obj_i <- read.csv(file.path(paste0(fdirs$outdatadir,'MSP_Planning_Results.csv')))
-}
+# }else{
+#   print('loading planning results')
+#   obj_i <- read.csv(file.path(paste0(fdirs$outdatadir,'MSP_Planning_Results.csv')))
+# }
 # Convert the plans to actual values1
 # Add aquaculture indices information
 Aqua_Dev_Indices = which(Aqua.Full.Domain.Logical)
