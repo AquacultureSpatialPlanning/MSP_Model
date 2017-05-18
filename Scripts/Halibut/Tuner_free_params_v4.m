@@ -35,7 +35,8 @@ global alphaCR habitat_area_i numpatches max_age Bij age_mature Dii K age_legal 
     habitat_area_i_fulldomain depth_i_fulldomain Nij_Fsumchoice nearestdist_to_outfall omega study_area_polygons_PacCoastFisheryGIS_TXT_noheader_soft_depthI...
     cells_with_hab_NUM tol_simulation T x0_PPUE_initial discount_rate
 %% Code task choices - CHOOSE
-load0_do1_tuning=str2num(input('Load Data(0) or Perform Tuning(1)? ','s')); %Tune the free parameters, or load pre-tuned parameters
+load0_do1_tuning=1; %Tune the free parameters, or load pre-tuned parameters
+% load0_do1_tuning=str2num(input('Load Data(0) or Perform Tuning(1)? ','s')); %Tune the free parameters, or load pre-tuned parameters
 Plot_params1_0N_1Y=1; %Plot the spatial and demographic parameters? Note: plotting the adult movement and larval dispersal kernels is slow
 Verify_model_0N_1Y=1; %Run core and fleet models under virgin and MSY conditions and compare/critique results
 runtimeseries_0N_1Y=1; %Run model over finite time horizon and record spatially and temporally explicit results (e.g., for NPV calculation)
