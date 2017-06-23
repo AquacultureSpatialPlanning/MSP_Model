@@ -3,8 +3,8 @@ function [out]=Ei_wrt_PPUE(x0_PPUE,habitat_area_i,theta,price,Bi_legal,delta,gam
 
 % whos x0_PPUE habitat_area_i theta price Bi_legal delta gamma distance_to_port_for_each_soft_depth_patch SQ_1fishable_0notfishable_for_each_soft_depth_patch
 
-% global Bi_legal price delta theta Fsum habitat_area_i gamma distance_to_port_for_each_soft_depth_patch SQ_1fishable_0notfishable_for_each_soft_depth_patch qi
-                    
+global Bi_legal price delta theta Fsum habitat_area_i gamma distance_to_port_for_each_soft_depth_patch SQ_1fishable_0notfishable_for_each_soft_depth_patch qi
+
 
 %      %(EXP MODEL) w/o distance from port effect
 %      Z=(x0_PPUE+habitat_area_i.*theta)./(price.*Bi_legal);
@@ -36,10 +36,10 @@ function [out]=Ei_wrt_PPUE(x0_PPUE,habitat_area_i,theta,price,Bi_legal,delta,gam
      %(EXP MODEL) WITH distance from port effect
      Ei_vector_fleet_all_patches=zeros(size(habitat_area_i)); %This will be the output of Ei for ALL patches, fill in with fleet model results from FISHABLE patches
      %pull just the fishable patches:
-     Bi_legal_fishable=Bi_legal(SQ_1fishable_0notfishable_for_each_soft_depth_patch); 
+     Bi_legal_fishable=Bi_legal(SQ_1fishable_0notfishable_for_each_soft_depth_patch);
      habitat_area_i_fishable=habitat_area_i(SQ_1fishable_0notfishable_for_each_soft_depth_patch);
-     distance_to_port_for_each_soft_depth_patch_fishable=distance_to_port_for_each_soft_depth_patch(SQ_1fishable_0notfishable_for_each_soft_depth_patch); 
-     delta_fishable=delta(SQ_1fishable_0notfishable_for_each_soft_depth_patch); 
+     distance_to_port_for_each_soft_depth_patch_fishable=distance_to_port_for_each_soft_depth_patch(SQ_1fishable_0notfishable_for_each_soft_depth_patch);
+     delta_fishable=delta(SQ_1fishable_0notfishable_for_each_soft_depth_patch);
      %Now run the fleet model in just those patches
      Z=(x0_PPUE+habitat_area_i_fishable.*theta.*(1+gamma.*distance_to_port_for_each_soft_depth_patch_fishable))./(price.*Bi_legal_fishable);
     lambert_z=-exp(-1./Z)./Z;
