@@ -300,10 +300,10 @@ if(readline('Run Dynamic Halibut Model For MSP? Y/N ') == 'Y'){
   system2(matlab_root,
     args = c('-nodesktop','-noFigureWindows','-nosplash','-r',
     paste0("run\\(\\'",scrpdir,"Halibut/SCB_MSP_Dynamic.m\\'\\)")))
+  system2(matlab_root,
+    args = c('-nodesktop','-noFigureWindows','-nosplash','-r',
+    paste0("run\\(\\'",scrpdir,"Halibut/MSP_SolutionPlots_v3_MSP.m\\'\\)")))
 }
-system2(matlab_root,
-  args = c('-nodesktop','-noFigureWindows','-nosplash','-r',
-  paste0("run\\(\\'",scrpdir,"Halibut/MSP_SolutionPlots_v3_MSP.m\\'\\)")))
 # Unconstrained
 if(readline('Run Conventional Halibut For Conventional Models? ') == 'Y'){
   system2(matlab_root,
@@ -333,7 +333,11 @@ Master.matrix.max <- rbind(Static.values.data,Unconstrained_data,Constrained_dat
 color.vector.max=c(rep('coral',length.out=nrow(Static.values.data)),rep('purple',length.out=nrow(Unconstrained_data)),rep('green',length.out=nrow(Constrained_data)))
 
 
-Static.values.data %>% select(Mussel,Finfish,Kelp,Viewshed) %>% filter(Viewshed > .97 & Mussel > 0 & Finfish > 0 & Kelp > 0) %>% mutate(Cumliative = Mussel + Finfish + Kelp) %>% distinct() %>% arrange(Cumliative,desc(Cumliative))
+Static.values.data %>% select(Mussel,Finfish,Kelp,Viewshed) %>%
+  filter(Viewshed > .95 & Mussel > 0 & Finfish > 0 & Kelp > 0) %>%
+  distinct() %>% mutate(Cumulative = apply(Static.values.data %>%
+  select(Mussel,Finfish,Kelp,Viewshed) %>% filter(Viewshed > .95 & Mussel > 0 & Finfish > 0 & Kelp > 0) %>%
+  distinct() %>% select(Mussel, Finfish, Kelp),MARGIN = 1,FUN = mean)) %>% arrange(desc(Cumulative))
 
 Static.values.data %>% select(Finfish,Disease) %>% filter(Disease > .99) %>% arrange(desc(Finfish)) %>% distinct()
 
@@ -616,7 +620,8 @@ ggsave(paste0(outfigdir,'Fig 6.png'),fig6,width=8, height=8,units=units)
 # current.directory.code <- '~/Desktop/Code/SI Figures Code/'
 # current.directory.figures <- '~/Desktop/Code/SI Figures/'
 # Coastline.data<-read.csv(file='Coastline.csv',header=F)
-theme_3 = theme(plot.margin = unit(c(.50,0,-.15,1), units = "lines"),
+# plot.margin = unit(c(.50,0,-.15,1), units = "lines")
+theme_3 = theme(plot.margin = unit(c(.1,.1,-.25,.1), units = "lines"),
               axis.text = element_blank(),
               axis.title = element_blank(),
               axis.ticks = element_blank(),
@@ -624,9 +629,9 @@ theme_3 = theme(plot.margin = unit(c(.50,0,-.15,1), units = "lines"),
               # axis.ticks.margin = unit(0, "lines"),
               panel.background=element_rect(fill="white"),
               panel.grid=element_blank(),
-              plot.title=element_text(hjust =.35,vjust=.1))
+              plot.title=element_text(hjust =.37,vjust=0,margin=margin(0,0,0,0)))
 
-theme_2 = theme(plot.margin = unit(c(0,0,0,0), units = "lines"),
+theme_3A = theme(plot.margin = unit(c(.1,.1,-.25,.1), units = "lines"),
               axis.text = element_blank(),
               axis.title = element_blank(),
               axis.ticks = element_blank(),
@@ -634,7 +639,56 @@ theme_2 = theme(plot.margin = unit(c(0,0,0,0), units = "lines"),
               # axis.ticks.margin = unit(0, "lines"),
               panel.background=element_rect(fill="white"),
               panel.grid=element_blank(),
-              plot.title=element_text(hjust =.30,vjust=.1))
+              plot.title=element_text(hjust =.37,vjust=0,margin=margin(0,0,0,0)))
+
+theme_3A = theme(plot.margin = unit(c(.1,.1,-.25,.1), units = "lines"),
+              axis.text = element_blank(),
+              axis.title = element_blank(),
+              axis.ticks = element_blank(),
+              # axis.ticks.length = unit(0, "lines"),
+              # axis.ticks.margin = unit(0, "lines"),
+              panel.background=element_rect(fill="white"),
+              panel.grid=element_blank(),
+              plot.title=element_text(hjust =.37,vjust=0,margin=margin(0,0,0,0)))
+
+theme_3B = theme(plot.margin = unit(c(-.25,.1,-.25,.1), units = "lines"),
+              axis.text = element_blank(),
+              axis.title = element_blank(),
+              axis.ticks = element_blank(),
+              # axis.ticks.length = unit(0, "lines"),
+              # axis.ticks.margin = unit(0, "lines"),
+              panel.background=element_rect(fill="white"),
+              panel.grid=element_blank(),
+              plot.title=element_text(hjust =.37,vjust=0,margin=margin(0,0,0,0)))
+
+theme_3C = theme(plot.margin = unit(c(-.25,.1,.1,.1), units = "lines"),
+              axis.text = element_blank(),
+              axis.title = element_blank(),
+              axis.ticks = element_blank(),
+              # axis.ticks.length = unit(0, "lines"),
+              # axis.ticks.margin = unit(0, "lines"),
+              panel.background=element_rect(fill="white"),
+              panel.grid=element_blank(),
+              plot.title=element_text(hjust =.37,vjust=0,margin=margin(0,0,0,0)))
+
+theme_2A = theme(plot.margin = unit(c(.1,.1,-.25,.1), units = "lines"),
+              axis.text = element_blank(),
+              axis.title = element_blank(),
+              axis.ticks = element_blank(),
+              # axis.ticks.length = unit(0, "lines"),
+              # axis.ticks.margin = unit(0, "lines"),
+              panel.background=element_rect(fill="white"),
+              panel.grid=element_blank(),
+              plot.title=element_text(hjust =.27,vjust=0,margin=margin(0,0,0,0)))
+theme_2B = theme(plot.margin = unit(c(-.25,.1,.1,.1), units = "lines"),
+              axis.text = element_blank(),
+              axis.title = element_blank(),
+              axis.ticks = element_blank(),
+              # axis.ticks.length = unit(0, "lines"),
+              # axis.ticks.margin = unit(0, "lines"),
+              panel.background=element_rect(fill="white"),
+              panel.grid=element_blank(),
+              plot.title=element_text(hjust =.27,vjust=0,margin=margin(0,0,0,0)))
 
 labs = labs(x = NULL, y = NULL)
 # Figure S1
@@ -651,46 +705,46 @@ g_S2A <- rasterGrob(img_S2A, interpolate=TRUE)
 
 S2A<-qplot(1:10, 1:10, geom="blank") + ggtitle('A') +
       annotation_custom(g_S2A, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
-      theme_3 + labs + theme(plot.margin = unit(c(1,0,-.15,1),'lines'))
+      theme_3A + labs #gin = unit(c(0,0,0,0),'lines'))
 
 img_S2B <- readPNG(paste0(inpfigdir,'S2B.png'),native=T,info=T)
 g_S2B <- rasterGrob(img_S2B, interpolate=TRUE)
 
 S2B<-qplot(1:10, 1:10, geom="blank") + ggtitle('B') +
       annotation_custom(g_S2B, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
-      theme_3 + labs
+      theme_3B + labs #+ theme(plot.margin = unit(c(0,0,0,0),'lines'))
 
 img_S2C <- readPNG(paste0(inpfigdir,'S2C.png'),native=T,info=T)
 g_S2C <- rasterGrob(img_S2C, interpolate=TRUE)
 
 S2C<-qplot(1:10, 1:10, geom="blank") + ggtitle('C') +
   annotation_custom(g_S2C, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
-  theme_3 + labs
+  theme_3C + labs #+ theme(plot.margin = unit(c(0,0,0,0),'lines'))
 
-S2 <- arrangeGrob(S2A,S2B,S2C,ncol=1,nrow=3,padding=unit(1,'line'))
-ggsave(paste0(outfigdir,'Fig S2.png'),S2,width=width, height=height,units=units)
+S2 <- arrangeGrob(S2A,S2B,S2C,ncol=1,nrow=3,padding=unit(0,'line'))
+ggsave(paste0(outfigdir,'Fig S2.png'),S2, width = width, height=height,units=units)
 # S3
 img_S3A <- readPNG(paste0(inpfigdir,'S3A.png'),native=T,info=T)
 g_S3A <- rasterGrob(img_S3A, interpolate=TRUE)
 
 S3A<-qplot(1:10, 1:10, geom="blank") + ggtitle('A') +
   annotation_custom(g_S3A, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
-  theme_3 + labs + theme(plot.margin = unit(c(1,0,-.15,1),'lines'))
+  theme_3A + labs #+ #theme(plot.margin = unit(c(1,0,-.15,1),'lines'))
 
 img_S3B <- readPNG(paste0(inpfigdir,'S3B.png'),native=T,info=T)
 g_S3B <- rasterGrob(img_S3B, interpolate=TRUE)
 
 S3B<-qplot(1:10, 1:10, geom="blank") + ggtitle('B') +
   annotation_custom(g_S3B, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
-  theme_3 + labs
+  theme_3B + labs
 
 img_S3C <- readPNG(paste0(inpfigdir,'S3C.png'),native=T,info=T)
 g_S3C <- rasterGrob(img_S3C, interpolate=TRUE)
 
 S3C<-qplot(1:10, 1:10, geom="blank") + ggtitle('C') +
   annotation_custom(g_S3C, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
-  theme_3 + labs
-S3 <- arrangeGrob(S3A,S3B,S3C,ncol=1,nrow=3,padding=unit(-.5,'line'))
+  theme_3C + labs
+S3 <- arrangeGrob(S3A,S3B,S3C,ncol=1,nrow=3,padding=unit(0,'line'))
 ggsave(paste0(outfigdir,'Fig S3.png'),S3,width=width, height=height,units=units)
 # S4
 img_S4A <- readPNG(paste0(inpfigdir,'S5A.png'),native=T,info=T)
@@ -698,16 +752,16 @@ g_S4A <- rasterGrob(img_S4A, interpolate=TRUE)
 
 S4A<-qplot(1:10, 1:10, geom="blank") + ggtitle('A') +
   annotation_custom(g_S4A, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
-  theme_2 + labs + theme(plot.margin = unit(c(1,0,-.15,1),'lines'))
+  theme_2A + labs #+ theme(plot.margin = unit(c(1,0,-.15,1),'lines'))
 
 img_S4B <- readPNG(paste0(inpfigdir,'S5B.png'),native=T,info=T)
 g_S4B <- rasterGrob(img_S4B, interpolate=TRUE)
 
 S4B<-qplot(1:10, 1:10, geom="blank") + ggtitle('B') +
   annotation_custom(g_S4B, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
-  theme_2 + labs
+  theme_2B + labs
 
-S4 <- arrangeGrob(S4A,S4B,ncol=1,nrow=2,padding=unit(-.1,'line'))
+S4 <- arrangeGrob(S4A,S4B,ncol=1,nrow=2,padding=unit(-.5,'line'))
 ggsave(paste0(outfigdir,'Fig S4.png'),S4,width=width, height=height,units=units)
 # S5
 img_S5A <- readPNG(paste0(inpfigdir,'S6A.png'),native=T,info=T)
@@ -715,14 +769,14 @@ g_S5A <- rasterGrob(img_S5A, interpolate=TRUE)
 
 S5A<-qplot(1:10, 1:10, geom="blank") + ggtitle('A') +
   annotation_custom(g_S5A, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
-  theme_2 + labs + theme(plot.margin = unit(c(1,0,-.15,1),'lines'))
+  theme_2A + labs #+ theme(plot.margin = unit(c(1,0,-.15,1),'lines'))
 
 img_S5B <- readPNG(paste0(inpfigdir,'S6B.png'),native=T,info=T)
 g_S5B <- rasterGrob(img_S5B, interpolate=TRUE)
 
 S5B<-qplot(1:10, 1:10, geom="blank") + ggtitle('B') +
   annotation_custom(g_S5B, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
-  theme_2 + labs
+  theme_2B + labs
 
 S5 <- arrangeGrob(S5A,S5B,ncol=1,nrow=2,padding=unit(-.5,'line'))
 ggsave(paste0(outfigdir,'Fig S5.png'),S5,width=width, height=height,units=units)
@@ -732,67 +786,62 @@ g_S6A <- rasterGrob(img_S6A, interpolate=TRUE)
 
 S6A<-qplot(1:10, 1:10, geom="blank") + ggtitle('A') +
   annotation_custom(g_S6A, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
-  theme(plot.margin = unit(c(0,0,0,0), units = "lines"),
-                axis.text = element_blank(),
+  theme(axis.text = element_blank(),
                 axis.title = element_blank(),
                 axis.ticks = element_blank(),
                 # axis.ticks.length = unit(0, "lines"),
                 # axis.ticks.margin = unit(0, "lines"),
                 panel.background=element_rect(fill="white"),
                 panel.grid=element_blank(),
-                plot.title=element_text(hjust =.35,vjust=.1)) +
-  labs + theme(plot.title=element_text(hjust=0))
-
+                plot.title=element_text(hjust=.1,vjust=0,margin=margin(0,0,0,0)),
+                plot.margin = unit(c(.1,.1,-.25,-.25), units = "lines")) + labs
 
 img_S6B <- readPNG(paste0(inpfigdir,'S7B.png'),native=T,info=T)
 g_S6B <- rasterGrob(img_S6B, interpolate=TRUE)
 
 S6B<-qplot(1:10, 1:10, geom="blank") + ggtitle('B') +
   annotation_custom(g_S6B, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
-  theme(plot.margin = unit(c(0,0,0,0), units = "lines"),
-                axis.text = element_blank(),
+  theme(axis.text = element_blank(),
                 axis.title = element_blank(),
                 axis.ticks = element_blank(),
                 # axis.ticks.length = unit(0, "lines"),
                 # axis.ticks.margin = unit(0, "lines"),
                 panel.background=element_rect(fill="white"),
                 panel.grid=element_blank(),
-                plot.title=element_text(hjust =.35,vjust=.1)) +
-  labs + theme(plot.title=element_text(hjust=0))
-
+                plot.title=element_text(hjust=.1,vjust=0,margin=margin(0,0,0,0)),
+                plot.margin = unit(c(.1,-.25,.1,-.25), units = "lines")) + labs
+# plot.margin = unit(c(0,0,0,0), units = "lines"),
 img_S6C <- readPNG(paste0(inpfigdir,'S7C.png'),native=T,info=T)
 g_S6C <- rasterGrob(img_S6C, interpolate=TRUE)
 
 S6C<-qplot(1:10, 1:10, geom="blank") + ggtitle('C') +
   annotation_custom(g_S6C, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
-  theme(plot.margin = unit(c(0,0,0,0), units = "lines"),
-                axis.text = element_blank(),
+  theme(axis.text = element_blank(),
                 axis.title = element_blank(),
                 axis.ticks = element_blank(),
                 # axis.ticks.length = unit(0, "lines"),
                 # axis.ticks.margin = unit(0, "lines"),
                 panel.background=element_rect(fill="white"),
                 panel.grid=element_blank(),
-                plot.title=element_text(hjust =.35,vjust=.1)) +
-  labs + theme(plot.title=element_text(hjust=0))
-
+                plot.title=element_text(hjust=.1,vjust=0,margin=margin(0,0,0,0)),
+                plot.margin = unit(c(-.25,.1,.1,-.25), units = "lines")) + labs
+# plot.margin = unit(c(0,0,0,0), units = "lines"),
 img_S6D <- readPNG(paste0(inpfigdir,'S7D.png'),native=T,info=T)
 g_S6D <- rasterGrob(img_S6D, interpolate=TRUE)
 
 S6D<-qplot(1:10, 1:10, geom="blank") + ggtitle('D') +
   annotation_custom(g_S6D, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
-  theme(plot.margin = unit(c(0,0,0,0), units = "lines"),
-                axis.text = element_blank(),
+  theme(axis.text = element_blank(),
                 axis.title = element_blank(),
                 axis.ticks = element_blank(),
                 # axis.ticks.length = unit(0, "lines"),
                 # axis.ticks.margin = unit(0, "lines"),
                 panel.background=element_rect(fill="white"),
                 panel.grid=element_blank(),
-                plot.title=element_text(hjust =.35,vjust=.1)) +
-  labs + theme(plot.title=element_text(hjust=0))
-
-S6 <- arrangeGrob(S6A,S6B,S6C,S6D,ncol=2,nrow=2,padding=unit(1,'line'))
+                plot.title=element_text(hjust=.1,vjust=0,margin=margin(0,0,0,0)),
+                plot.margin = unit(c(-.25,-.25,.1,.1), units = "lines")) + labs
+# plot.margin = unit(c(0,0,0,0), units = "lines"),
+S6 <- arrangeGrob(S6A,S6B,S6C,S6D,ncol=2,nrow=2,padding=unit(-.5,'line'))
 ggsave(paste0(outfigdir,'Fig S6.png'),S6,width=width, height=height,units=units)
 
 # S7
@@ -813,7 +862,9 @@ S7A <- ggplot() + geom_line(data = U.C.Summary, aes(x = Itor, y = Number, group 
               axis.text.y=element_text(size=text.size,color="black"),legend.title=element_blank(),
               axis.title.x=element_text(size=text.size,color="black"),
               axis.text.x=element_text(size=text.size,color="black"),
-              legend.text=element_text(size=text.size),plot.title=element_text(hjust=0),legend.position = c(.17, .85))
+              legend.text=element_text(size=text.size),plot.title=element_text(hjust=0),
+              legend.position = c(.17, .80),
+              panel.border = element_rect(colour = "black", fill=NA, size=1),legend.key = element_rect(color='white',fill='white'))
 S7B <- ggplot() + geom_line(data = C.C.Summary, aes(x = Itor, y = Number, group = factor(Sector), color = factor(Sector))) +
         scale_fill_discrete(name="Seed",labels=c('Mussel','Finfish','Kelp')) +
         ggtitle('B') +
@@ -825,6 +876,8 @@ S7B <- ggplot() + geom_line(data = C.C.Summary, aes(x = Itor, y = Number, group 
               axis.text.y=element_text(size=text.size,color="black"),legend.title=element_blank(),
               axis.title.x=element_text(size=text.size,color="black"),
               axis.text.x=element_text(size=text.size,color="black"),
-              legend.text=element_text(size=text.size),plot.title=element_text(hjust=0),legend.position = c(.17, .85))
+              legend.text=element_text(size=text.size),plot.title=element_text(hjust=0),
+              legend.position = c(.17, .80),
+              panel.border = element_rect(colour = "black", fill=NA, size=1),legend.key = element_rect(color='white',fill='white'))
 S7 <- arrangeGrob(S7A, S7B, ncol = 1, nrow = 2)
 ggsave(paste0(outfigdir,'Fig S7.png'),S7,width=7, height=7,units=units)
