@@ -333,13 +333,13 @@ Master.matrix.max <- rbind(Static.values.data,Unconstrained_data,Constrained_dat
 color.vector.max=c(rep('coral',length.out=nrow(Static.values.data)),rep('purple',length.out=nrow(Unconstrained_data)),rep('green',length.out=nrow(Constrained_data)))
 
 
-Static.values.data %>% select(Mussel,Finfish,Kelp,Viewshed) %>%
-  filter(Viewshed > .95 & Mussel > 0 & Finfish > 0 & Kelp > 0) %>%
-  distinct() %>% mutate(Cumulative = apply(Static.values.data %>%
-  select(Mussel,Finfish,Kelp,Viewshed) %>% filter(Viewshed > .95 & Mussel > 0 & Finfish > 0 & Kelp > 0) %>%
-  distinct() %>% select(Mussel, Finfish, Kelp),MARGIN = 1,FUN = mean)) %>% arrange(desc(Cumulative))
+# Static.values.data %>% select(Mussel,Finfish,Kelp,Viewshed) %>%
+#   filter(Viewshed > .95 & Mussel > 0 & Finfish > 0 & Kelp > 0) %>%
+#   distinct() %>% mutate(Cumulative = apply(Static.values.data %>%
+#   select(Mussel,Finfish,Kelp,Viewshed) %>% filter(Viewshed > .95 & Mussel > 0 & Finfish > 0 & Kelp > 0) %>%
+#   distinct() %>% select(Mussel, Finfish, Kelp),MARGIN = 1,FUN = mean)) %>% arrange(desc(Cumulative))
 
-Static.values.data %>% select(Finfish,Disease) %>% filter(Disease > .99) %>% arrange(desc(Finfish)) %>% distinct()
+# Static.values.data %>% select(Finfish,Disease) %>% filter(Disease > .99) %>% arrange(desc(Finfish)) %>% distinct()
 
 seeds <- setNames(data.frame(t(readMat('~/MSP_Model/Input/Data/Lester_et_al_MSPsolutions_Evals_v3/EFPayoff_a_X_wrt_DM_filter.mat')[[1]])),true_sector_names) %>%
   select(Mussel, Finfish, Kelp) %>%
@@ -434,7 +434,7 @@ panel.EF<-function (x, y, itor=0, epsilon=.001, bg = NA, pch = 20, cex = .01, ..
     x.EF=EF.inter$x;y.EF=EF.inter$y;
   }else{
   }
-  lines(sort(x.EF),y.EF[order(x.EF)],col="midnightblue",lwd=2,lty=1)
+  lines(sort(x.EF),y.EF[order(x.EF)],col="midnightblue",lwd=10,lty=1)
   lines(sort(x.U),y.U[order(x.U)],col = "mediumorchid1",lwd=2,lty=1)
   lines(sort(x.S),y.S[order(x.S)],col = "coral1",lwd=2,lty=1)
 }
