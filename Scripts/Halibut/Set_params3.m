@@ -132,7 +132,7 @@ if runsetparams_1full==1
     disp(['Lat map lower = ',num2str(min(lat_lon_msp_domain(:,2))*(1-map_border_buffer_prop))])
     disp('Plug the above values into <http://www.ngdc.noaa.gov/mgg_coastline/> to generate Matlab export of msp_domain.dat shoreline coordinates')
     %load shoreline coordinates
-    msp_domain = textread(strcat(input_data_dir,'msp_domain.dat'));
+    msp_domain = textread('msp_domain.dat');
     %set mapping symbols and line dimensions (MAY NEED TO CHANGE THESE NUMBERS, depending on computer screen size)
     coastlinewidth=2; %thickness of coastline line on maps
     patchmarkersize=9; %size of patch squares on maps (set this so that the patches to "fit" together like a perfect grid)

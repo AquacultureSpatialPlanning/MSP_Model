@@ -2,6 +2,10 @@ myfile filter=lfs diff=lfs merge=lfs -text
 Scripts/Halibut/mij.mat filter=lfs diff=lfs merge=lfs -text
 tuned_params.mat filter=lfs diff=lfs merge=lfs -text
 Input/Data/tuned_params.mat filter=lfs diff=lfs merge=lfs -text
+<<<<<<< HEAD
+Output/Data/mij.mat filter=lfs diff=lfs merge=lfs -text
+mij.mat filter=lfs diff=lfs merge=lfs -text
+=======
 *.csv filter=lfs diff=lfs merge=lfs -text
 Output/Data/Static_plans.csv filter=lfs diff=lfs merge=lfs -text
 Output/Data/Dynamic_Values_Export.csv filter=lfs diff=lfs merge=lfs -text
@@ -13,3 +17,32 @@ Scripts/CrowT0v1/Raw_Patch_Data.csv filter=lfs diff=lfs merge=lfs -text
 Input/Data/Raw_Impacts.mat filter=lfs diff=lfs merge=lfs -text
 Output/Data/JS_MSP_Output.mat filter=lfs diff=lfs merge=lfs -text
 Output/Data/JS_MSP_Output.Rdata filter=lfs diff=lfs merge=lfs -text
+>>>>>>> e9a6acd68e4a0fd08b18829858208289c9350661
+Input/Data/Lester_et_al_MSPsolutions_Evals_v1.7z filter=lfs diff=lfs merge=lfs -text
+Input/Data/Input/Data/Lester_et_al_MSPsolutions_Evals_v1/ filter=lfs diff=lfs merge=lfs -text
+Input/Data/Lester_et_al_MSPsolutions_Evals_v2_ResultsOnly.7z filter=lfs diff=lfs merge=lfs -text
+Input/Data/LInput/Data/Lester_et_al_MSPsolutions_Evals_v2_ResultsOnly/ filter=lfs diff=lfs merge=lfs -text
+Input/Data/Lester_et_al_MSPsolutions_Evals_v2_ResultsOnly/ filter=lfs diff=lfs merge=lfs -text
+Input/Data/Lester_et_al_MSPsolutions_Evals_v2_ResultsOnly/itor=0 filter=lfs diff=lfs merge=lfs -text
+Input/Data/Lester_et_al_MSPsolutions_Evals_v3.7z filter=lfs diff=lfs merge=lfs -text
+Input/Data/Lester_et_al_MSPsolutions_Evals_v3/ filter=lfs diff=lfs merge=lfs -text
+Input/**/* filter=lfs diff=lfs merge=lfs -text
+Output/**/* filter=lfs diff=lfs merge=lfs -text
+Input/Data/SeaGrant_Final.xlsx filter=lfs diff=lfs merge=lfs -text
+Input/Data/C_C_obj_i.mat filter=lfs diff=lfs merge=lfs -text
+Input/Data/U_C_obj_i.mat filter=lfs diff=lfs merge=lfs -text
+Input/Data/U_C_obj_i.csv filter=lfs diff=lfs merge=lfs -text
+Input/Data/C_C_obj_i.csv filter=lfs diff=lfs merge=lfs -text
+Input/Data/msp_domain.dat filter=lfs diff=lfs merge=lfs -text
+Input/Data/halibut_connectivity_matrix_June27.mat filter=lfs diff=lfs merge=lfs -text
+Input/Data/disease_connect_matrix.mat filter=lfs diff=lfs merge=lfs -text
+Input/Data/Target_FID_and_Yi_fulldomain_NPV_at_MSY_noAqua.csv filter=lfs diff=lfs merge=lfs -text
+Input/Data/SeaGrant_data_complete_2015.csv filter=lfs diff=lfs merge=lfs -text
+Input/Data/PacCoastFisheryGIS_kglandings_by_block_Com_plus_Rec_sum2one.mat filter=lfs diff=lfs merge=lfs -text
+Input/Data/Lester_et_al_MSPsolutions_Evals_v3/EFPayoff_i_a_X.mat filter=lfs diff=lfs merge=lfs -text
+Output/Data/EFPayoff_i_a_X.mat filter=lfs diff=lfs merge=lfs -text
+Output/Data/Policy_i_a.csv filter=lfs diff=lfs merge=lfs -text
+Output/Data/Policy_i_a_1.csv filter=lfs diff=lfs merge=lfs -text
+Output/Data/Policy_i_a_2.mat filter=lfs diff=lfs merge=lfs -text
+Output/Data/Policy_i_a_3.mat filter=lfs diff=lfs merge=lfs -text
+Output/Data/EFPayoff_a_X_wrt_DM_new.mat filter=lfs diff=lfs merge=lfs -text
