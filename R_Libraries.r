@@ -1,7 +1,7 @@
 R_Libraries <- function(install_packs){
 	if(install_packs == T){install.packages('XML')}else{suppressMessages(require(XML))}
-	theurl <- "http://www.computerworld.com/article/2921176/business-intelligence/great-r-packages-for-data-import-wrangling-visualization.html"
-	tables <- readHTMLTable(theurl)
+	# theurl <- "http://www.computerworld.com/article/2921176/business-intelligence/great-r-packages-for-data-import-wrangling-visualization.html"
+	# tables <- readHTMLTable(theurl)
 	packs <- c('RPostgreSQL','dplyr','tidyr','plyr','readxl','testthat',
 						'csvread','lubridate','xlsx','curl','XML','RCurl',
 						'data.table','ggplot2','TeachingDemos','maps','maptools',
