@@ -12,6 +12,7 @@
 # Install R markdown
 # install.packages("knitr",repos = 'https://cran.mtu.edu/')
 # library(knitr)
+>>>>>>> master
 # Set global variables
 n.sector <- 7 # Number of sectors
 epsilon <- 0.2 # Stepsize of sector weights
