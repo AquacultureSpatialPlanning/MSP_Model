@@ -439,7 +439,7 @@ panel.EF<-function (x, y, itor=0, epsilon=.001, bg = NA, pch = 20, cex = .01, ..
     x.EF=EF.inter$x;y.EF=EF.inter$y;
   }else{
   }
-  lines(sort(x.EF),y.EF[order(x.EF)],col="midnightblue",lwd=10,lty=1)
+  lines(sort(x.EF),y.EF[order(x.EF)],col="midnightblue",lwd=6,lty=1)
   lines(sort(x.U),y.U[order(x.U)],col = "mediumorchid1",lwd=2,lty=1)
   lines(sort(x.S),y.S[order(x.S)],col = "coral1",lwd=2,lty=1)
 }
@@ -467,7 +467,8 @@ l2<-legend(x = l1$rect$left+.0020, y = with(l1$rect, top - h)-.005,
            title.adj = 0, bty = 'n', adj = 0, text.width=.25)
 inset.figure.proportion = 1/3
 inset.figure.dims = c(rep(width*(inset.figure.proportion),ts = 2))
-subplot(Tradeoff.cartoon(),par = list(cex.main=2.5, cex = .45, lwd = 1))
+# The subplot command has changed quite drastically, as a result the cartoon needs to be inserted manually
+try(subplot(Tradeoff.cartoon(),par = list(cex.main=2.5, cex = .45, lwd = 1)))
 par(oma=c(0,2,2,0))
 title('A', adj = 0, outer = T, cex = .75)
 title(xlab='% of Maximum',line = 3.5)
