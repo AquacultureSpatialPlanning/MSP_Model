@@ -3,7 +3,7 @@ set(0,'DefaultAxesFontSize',35)
 set(0,'DefaultLineLineWidth',2)
 set(0,'DefaultAxesLineWidth',2)
 set(0,'DefaultSurfaceLineWidth',2)
-grid on 
+grid on
 axis on
 
 p = mfilename('fullpath');
@@ -76,3 +76,43 @@ V3 = zeros(length(target_fid_fulldomain),1);V3(ia1) = 1;
     axis square
     axis tight
     print(strcat(DirPart,'/Input/Figures/S7B'),'-dpng')
+% Benthic impact figure
+    [c1,ia1,ib1] = intersect(target_fid_fulldomain,Raw_Impacts.FID(Raw_Impacts.Finfish > 0));
+    foo=zeros(length(target_fid_fulldomain),1);foo(ia1) = Raw_Impacts.Benthic_Impacts(ib1);
+    patch_color=foo(ia1);
+    tmp=lat_lon_msp_domain(ia1,:);
+    figure
+    scatter(tmp(:,1),tmp(:,2),patchmarkersize,patch_color,'s','filled') %all patches=grey filled in squares
+    hold on
+    scatter(lat_lon_leftmapedge(1),lat_lon_leftmapedge(2),0.1,'.','k')
+    colorbar
+    axis tight
+%     xlabel('')
+%     ylabel('')
+%     title('Mussel and Kelp viewshed impacts')
+    set(gcf,'color','white');
+    plot(msp_domain(:,1),msp_domain(:,2),'k','linewidth',coastlinewidth) %coastline
+    box on
+    axis square
+    axis tight
+    print(strcat(DirPart,'/Input/Figures/S7A'),'-dpng')
+% Disease Impact Figures
+    [c1,ia1,ib1] = intersect(target_fid_fulldomain,Raw_Impacts.FID(Raw_Impacts.Finfish > 0));
+    foo=zeros(length(target_fid_fulldomain),1);foo(ia1) = Raw_Impacts.Disease_Risk(ib1);
+    patch_color=foo(ia1);
+    tmp=lat_lon_msp_domain(ia1,:);
+    figure
+    scatter(tmp(:,1),tmp(:,2),patchmarkersize,patch_color,'s','filled') %all patches=grey filled in squares
+    hold on
+    scatter(lat_lon_leftmapedge(1),lat_lon_leftmapedge(2),0.1,'.','k')
+    colorbar
+    axis tight
+%     xlabel('')
+%     ylabel('')
+%     title('')
+    set(gcf,'color','white');
+    plot(msp_domain(:,1),msp_domain(:,2),'k','linewidth',coastlinewidth) %coastline
+    box on
+    axis square
+    axis tight
+    print(strcat(DirPart,'/Input/Figures/S7D'),'-dpng')
