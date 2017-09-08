@@ -7,14 +7,11 @@
 # Load necessary R libraries. For the function R_Libraries, enter T if this is the first time running the model. This will
 # install all of the necessary libraries and load them into the
 # current workspace.
-<<<<<<< HEAD
-=======
-source(paste0(wkdir,'/MSP_Model/Scripts','/R_Libraries.r'))
-R_Libraries(FALSE) # After the first initial run this can be set to F
+# source(paste0(wkdir,'/MSP_Model/Scripts','/R_Libraries.r'))
+# R_Libraries(FALSE) # After the first initial run this can be set to F
 # Install R markdown
-install.packages("knitr",repos = 'https://cran.mtu.edu/')
-library(knitr)
->>>>>>> dev
+# install.packages("knitr",repos = 'https://cran.mtu.edu/')
+# library(knitr)
 # Set global variables
 n.sector <- 7 # Number of sectors
 epsilon <- 0.2 # Stepsize of sector weights
