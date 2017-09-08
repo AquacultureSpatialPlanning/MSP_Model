@@ -278,10 +278,13 @@ if runtimeseries_0N_1Y==1
     target_fid_fulldomain=study_area_polygons_PacCoastFisheryGIS_NUM(:,col_target_fid);
     xlswrite(strcat(output_data_dir,'Target_FID_and_Yi_fulldomain_NPV_at_MSY_noAqua.xlsx'),[target_fid_fulldomain Yi_fulldomain_NPV]);
 end
+<<<<<<< HEAD
 % Save Variables for running dynamic halibut model, those not included are Aqua_dev_indices
 gamma_var = gamma;
 save(strcat(script_dir,'Dynamic_Evaluation_Files/tuned_parameters_short'),'target_fid_fulldomain','SQ_1fishable_0notfishable_for_each_soft_depth_patch_ORIGINAL'...
          ,'Nij_initial_msy_TS','x0_PPUE_msy_TS','Fsum_msy','target_fid_hab_depth','Wij','numpatches','max_age','T','delta','age_legal','age_mature','Dii','alphaCR','beta_i'...
          ,'habitat_area_i','theta','price','gamma_var','distance_to_port_for_each_soft_depth_patch','Mii','habitat_area_i','age_move','discount_rate_iy','x0_PPUE_initial'...
          ,'x0_PPUE_msy_TS','Bi_legal','SQ_1fishable_0notfishable_for_each_soft_depth_patch','Fsum','discount_rate_iy')
+=======
+>>>>>>> dev
 quit()
