@@ -363,6 +363,44 @@ cols <- c("Mussel"="Blue","Finfish"="Salmon","Kelp"="Green","Halibut"="Burlywood
 
 # current.directory.scripts=outfigdir
 # setwd(current.directory.scripts)
+png_load <- function(imageList, theme, labs){
+    images <- list()
+    subtitleList <- c('A','B','C','D')
+    for(image_itor in 1:length(imageList)){
+        # print(imageList[image_itor])
+        img <- readPNG(paste0(inpfigdir,imageList[image_itor]),native=T,info=T)
+        g <- rasterGrob(img, interpolate=TRUE)
+        # print(g)
+        ggObj<-qplot(1:10, 1:10, geom="blank") +
+            annotation_custom(g, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf) +
+            ggtitle(subtitleList[image_itor]) +
+            theme + labs
+        ggObj
+        # print(ggObj)
+        images[[image_itor]] <- ggObj
+    }
+    return(images)
+}
+
+figure_output <- function(formatList, figure_object, outfigdir, file_name, width, height, units){
+    for(itor in 1:length(formatList)){
+        folder <- file.path(outfigdir, formatList[itor])
+        dir.create(folder, showWarnings = FALSE)
+        file_name_full <- file.path(folder, paste0(file_name, '.', formatList[itor]))
+        print(file_name_full)
+        # if(format == 'eps'){
+        #     postscript(file = file_name_full, width = width, height = height, paper = "special")
+        #     figure_object
+        #     dev.off()
+        # }
+        ggsave(filename = file_name_full,
+            plot = figure_object,
+            width = width,
+            height = height,
+            units = units,
+            dpi = 1000)
+    }
+}
 theme = theme(plot.margin = unit(c(.2,0,.2,1), units = "lines"),
                 axis.text = element_blank(),
                 axis.title = element_blank(),
@@ -374,6 +412,19 @@ theme = theme(plot.margin = unit(c(.2,0,.2,1), units = "lines"),
                 plot.title=element_text(hjust=0))
 labs = labs(x = NULL, y = NULL)
 # Figure 1
+imageList=c("Fig1A Capture.png",
+    "MusselValueApril.png",
+    "FishValueApril.png",
+    "KelpValueApril.png")
+fig1List = png_load(imageList,theme,labs)
+
+fig1 <- arrangeGrob(grobs = fig1List,
+    ncol=2,
+    nrow=2,
+    padding = unit(-.5,'lines'))
+formatList <- c('png','eps','pdf')
+figure_output(formatList, fig1, outfigdir, file_name='Fig 1', width, height, units)
+
 img <- readPNG(paste0(inpfigdir,"Fig1A Capture.png"),native=T,info=T)
 g <- rasterGrob(img, interpolate=TRUE)
 
@@ -402,7 +453,8 @@ d<-qplot(1:10, 1:10, geom="blank") + ggtitle('D') + annotation_custom(g_kelp, xm
   labs
 
 fig1 <- arrangeGrob(a,b,c,d,ncol=2,nrow=2,padding = unit(-.5,'lines'))
-ggsave(paste0(outfigdir,'Fig 1.png'),fig1,width=width, height=height,units = units)
+# ggsave(paste0(outfigdir,'Fig 1.png'),fig1,width=width, height=height,units = units)
+plot_formatting(fig1, outfigdir, file_name='Fig 1', 'eps', width, height, units)
 # ggsave(paste0(outfigdir,'Fig 1.png'),fig1)
 # Figure 2
 source('~/MSP_Model/Scripts/Tradeoff Cartoon.r')
@@ -468,7 +520,7 @@ l2<-legend(x = l1$rect$left+.0020, y = with(l1$rect, top - h)-.005,
 inset.figure.proportion = 1/3
 inset.figure.dims = c(rep(width*(inset.figure.proportion),ts = 2))
 # The subplot command has changed quite drastically, as a result the cartoon needs to be inserted manually
-try(subplot(Tradeoff.cartoon(),par = list(cex.main=2.5, cex = .45, lwd = 1)))
+# try(subplot(Tradeoff.cartoon(),par = list(cex.main=2.5, cex = .45, lwd = 1)))
 par(oma=c(0,2,2,0))
 title('A', adj = 0, outer = T, cex = .75)
 title(xlab='% of Maximum',line = 3.5)
