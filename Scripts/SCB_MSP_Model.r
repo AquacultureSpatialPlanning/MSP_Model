@@ -417,45 +417,12 @@ imageList=c("Fig1A Capture.png",
     "FishValueApril.png",
     "KelpValueApril.png")
 fig1List = png_load(imageList,theme,labs)
-
 fig1 <- arrangeGrob(grobs = fig1List,
     ncol=2,
     nrow=2,
     padding = unit(-.5,'lines'))
 formatList <- c('png','eps','pdf')
 figure_output(formatList, fig1, outfigdir, file_name='Fig 1', width, height, units)
-
-img <- readPNG(paste0(inpfigdir,"Fig1A Capture.png"),native=T,info=T)
-g <- rasterGrob(img, interpolate=TRUE)
-
-a<-qplot(1:10, 1:10, geom="blank") + annotation_custom(g, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf) + ggtitle('A') +
-  theme + labs
-
-img_mussel <- readPNG(paste0(inpfigdir,"MusselValueApril.png"),native=T,info=T)
-g_mussel <- rasterGrob(img_mussel, interpolate=TRUE)
-
-b <- qplot(1:10, 1:10, geom="blank") + ggtitle('B') + annotation_custom(g_mussel, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf) +
-  theme +
-  labs
-
-img_finfish <- readPNG(paste0(inpfigdir,"FishValueApril.png"),native=T,info=T)
-g_finfish <- rasterGrob(img_finfish, interpolate=TRUE,just='center')
-
-c<-qplot(1:10, 1:10, geom="blank") + ggtitle('C') + annotation_custom(g_finfish, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf) +
-  theme +
-  labs
-
-img_kelp <- readPNG(paste0(inpfigdir,"KelpValueApril.png"),native=T,info=T)
-g_kelp <- rasterGrob(img_kelp, interpolate=TRUE, just='center')
-
-d<-qplot(1:10, 1:10, geom="blank") + ggtitle('D') + annotation_custom(g_kelp, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf) +
-  theme +
-  labs
-
-fig1 <- arrangeGrob(a,b,c,d,ncol=2,nrow=2,padding = unit(-.5,'lines'))
-# ggsave(paste0(outfigdir,'Fig 1.png'),fig1,width=width, height=height,units = units)
-plot_formatting(fig1, outfigdir, file_name='Fig 1', 'eps', width, height, units)
-# ggsave(paste0(outfigdir,'Fig 1.png'),fig1)
 # Figure 2
 source('~/MSP_Model/Scripts/Tradeoff Cartoon.r')
 # p_cartoon <- Tradeoff.cartoon()
@@ -526,12 +493,17 @@ title('A', adj = 0, outer = T, cex = .75)
 title(xlab='% of Maximum',line = 3.5)
 dev.off()
 # Figure 3
-# Hot spot set up
-# system2(matlab_root,
-#   args = c('-nodesktop','-noFigureWindows','-nosplash','-r',
-#   paste0("run\\(\\'",scrpdir,"Scratch_File.m\\'\\)")))
-# source(file.path(paste0(scrpdir,'Scratch_File.r')))
-# png(paste0(outfigdir,'Fig 3.png'),width=width, height=height,res=res,units=units)
+imageList=c("Figure_3_ALL.png",
+    "Figure_3_mussel.png",
+    "Figure_3_finfish.png",
+    "KelpValueApril.png")
+fig3List = png_load(imageList,theme,labs)
+fig3 <- arrangeGrob(grobs = fig3List,
+    ncol=2,
+    nrow=2,
+    padding = unit(-.5,'lines'))
+formatList <- c('png','eps','pdf')
+figure_output(formatList, fig3, outfigdir, file_name='Fig 3', width, height, units)
 img_hot_all <- readPNG(paste0(inpfigdir,"Figure_3_ALL.png"),native=T,info=T)
 g_hot_all <- rasterGrob(img_hot_all, interpolate = TRUE)
 
