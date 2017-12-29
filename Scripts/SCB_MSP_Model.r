@@ -360,23 +360,21 @@ units='in'
 text.size<-12
 patch.size=1.5
 cols <- c("Mussel"="Blue","Finfish"="Salmon","Kelp"="Green","Halibut"="Burlywood","Viewshed"='Cyan',"Benthic"='Orange',"Disease"='Black')
+formatList <- c('png','eps','pdf') # Specify formats to plot
 
-# current.directory.scripts=outfigdir
-# setwd(current.directory.scripts)
-png_load <- function(imageList, theme, labs){
+# Custom plotting functions (used throughout figure code)
+ png_load <- function(imageList, theme, labs){
     images <- list()
     subtitleList <- c('A','B','C','D')
     for(image_itor in 1:length(imageList)){
         # print(imageList[image_itor])
         img <- readPNG(paste0(inpfigdir,imageList[image_itor]),native=T,info=T)
         g <- rasterGrob(img, interpolate=TRUE)
-        # print(g)
         ggObj<-qplot(1:10, 1:10, geom="blank") +
             annotation_custom(g, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf) +
             ggtitle(subtitleList[image_itor]) +
             theme + labs
-        ggObj
-        # print(ggObj)
+        # ggObj
         images[[image_itor]] <- ggObj
     }
     return(images)
@@ -388,11 +386,6 @@ figure_output <- function(formatList, figure_object, outfigdir, file_name, width
         dir.create(folder, showWarnings = FALSE)
         file_name_full <- file.path(folder, paste0(file_name, '.', formatList[itor]))
         print(file_name_full)
-        # if(format == 'eps'){
-        #     postscript(file = file_name_full, width = width, height = height, paper = "special")
-        #     figure_object
-        #     dev.off()
-        # }
         ggsave(filename = file_name_full,
             plot = figure_object,
             width = width,
@@ -401,6 +394,7 @@ figure_output <- function(formatList, figure_object, outfigdir, file_name, width
             dpi = 1000)
     }
 }
+# Theme used throughout primary text unless otherwise specified.
 theme = theme(plot.margin = unit(c(.2,0,.2,1), units = "lines"),
                 axis.text = element_blank(),
                 axis.title = element_blank(),
@@ -411,6 +405,7 @@ theme = theme(plot.margin = unit(c(.2,0,.2,1), units = "lines"),
                 panel.grid=element_blank(),
                 plot.title=element_text(hjust=0))
 labs = labs(x = NULL, y = NULL)
+
 # Figure 1
 imageList=c("Fig1A Capture.png",
     "MusselValueApril.png",
@@ -421,118 +416,22 @@ fig1 <- arrangeGrob(grobs = fig1List,
     ncol=2,
     nrow=2,
     padding = unit(-.5,'lines'))
-formatList <- c('png','eps','pdf')
 figure_output(formatList, fig1, outfigdir, file_name='Fig 1', width, height, units)
 # Figure 2
-source('~/MSP_Model/Scripts/Tradeoff Cartoon.r')
-# p_cartoon <- Tradeoff.cartoon()
-png(paste0(outfigdir,'Fig 2B.png'),width=8, height=8,units=units,res = res)
-source('~/MSP_Model/Scripts/Tradeoff Cartoon.r')
-dev.off()
-png(paste0(outfigdir,'Fig 2.png'),width=8, height=6.4,units=units,res = res)
-panel.EF<-function (x, y, itor=0, epsilon=.001, bg = NA, pch = 20, cex = .01, ...)
-{
-  x.MSP=x[color.vector=='coral']
-  y.MSP=y[color.vector=='coral']
-
-  points(x.MSP,y.MSP, pch = 16, col = alpha("dodgerblue",1/75),cex = cex/2)
-  x.U=x[color.vector=='purple']
-  y.U=y[color.vector=='purple']
-  x.S=x[color.vector=='green']
-  y.S=y[color.vector=='green']
-  x.EF=NULL
-  y.EF=NULL
-  alpha.mat.tmp=seq(from=0,by=epsilon,to=1)
-  # MSP
-  for(itor in 1:length(alpha.mat.tmp)){
-    alpha.tmp=alpha.mat.tmp[itor]
-    A=(alpha.tmp*x.MSP)+((1-alpha.tmp)*y.MSP)
-    I=which(A==max(A))
-    x.EF[itor]=max(unique(x.MSP[I]))
-    I.tmp.x=which(x.MSP==max(unique(x.MSP[I])))
-    I.tmp.y=which(y.MSP[I.tmp.x]==max(unique(y.MSP[I.tmp.x])))
-    y.EF[itor]=unique(y.MSP[I.tmp.x[I.tmp.y]])}
-  x.EF.original=x.EF;y.EF.original=y.EF;
-  if(length(unique(x.EF.original))!=1&length(unique(x.EF.original))!=1){
-    EF.inter=approx(x.EF.original,y=y.EF.original,n=length(alpha.mat.tmp))
-    x.EF=EF.inter$x;y.EF=EF.inter$y;
-  }else{
-  }
-  lines(sort(x.EF),y.EF[order(x.EF)],col="midnightblue",lwd=6,lty=1)
-  lines(sort(x.U),y.U[order(x.U)],col = "mediumorchid1",lwd=2,lty=1)
-  lines(sort(x.S),y.S[order(x.S)],col = "coral1",lwd=2,lty=1)
-}
-#   pdf.options(width = 8, height = 6.4)
-source(file.path(paste0(scrpdir,'pairs2.R')))
-color.vector=color.vector.max
- # Color Vector For Seperating the MSP from Conventional Solutions
-# sample <- rbind(MM_test.df %>% filter(Set == 'MSP') %>% sample_n(size = 1000),
-#   MM_test.df %>% filter(Set == 'U') %>% sample_n(size = 500),
-#   MM_test.df %>% filter(Set == 'C') %>% sample_n(size = 500))
-pairs2(100*Master.matrix.max,lower.panel=panel.EF,
-       upper.panel=NULL,col=color.vector,cex=0.8,xlim=c(0,100),
-       ylim=c(0,100),pch=16,font.labels=3,cex.axis=1,las=1,xaxp=c(0,100,4),yaxp=c(0,100,2),
-       gap=1)
-# title(xlab='% of Maximum',line = 1)
-title(ylab='% of Maximum')
-par(xpd=T)
-l1<-legend(.33,1,
-           legend=c('7D Frontier','2D Frontier'),fill=c("dodgerblue","midnightblue"),
-           cex=.75,title=expression(bold('Marine Spatial Planning (MSP)')),
-           title.adj = 0, bty = 'n', adj = 0, text.width=.25)
-l2<-legend(x = l1$rect$left+.0020, y = with(l1$rect, top - h)-.005,
-           legend=c('Constrained','Unconstrained'),fill=c("coral1","mediumorchid1"),
-           cex=.75,title=expression(bold('Conventional Planning ')),
-           title.adj = 0, bty = 'n', adj = 0, text.width=.25)
-inset.figure.proportion = 1/3
-inset.figure.dims = c(rep(width*(inset.figure.proportion),ts = 2))
-# The subplot command has changed quite drastically, as a result the cartoon needs to be inserted manually
-# try(subplot(Tradeoff.cartoon(),par = list(cex.main=2.5, cex = .45, lwd = 1)))
-par(oma=c(0,2,2,0))
-title('A', adj = 0, outer = T, cex = .75)
-title(xlab='% of Maximum',line = 3.5)
-dev.off()
+source('~/MSP_Model/Scripts/Fig2.r')
+Fig2(formatList)
 # Figure 3
 imageList=c("Figure_3_ALL.png",
     "Figure_3_mussel.png",
     "Figure_3_finfish.png",
-    "KelpValueApril.png")
+    "Figure_3_kelp.png")
 fig3List = png_load(imageList,theme,labs)
 fig3 <- arrangeGrob(grobs = fig3List,
     ncol=2,
     nrow=2,
     padding = unit(-.5,'lines'))
-formatList <- c('png','eps','pdf')
 figure_output(formatList, fig3, outfigdir, file_name='Fig 3', width, height, units)
-img_hot_all <- readPNG(paste0(inpfigdir,"Figure_3_ALL.png"),native=T,info=T)
-g_hot_all <- rasterGrob(img_hot_all, interpolate = TRUE)
 
-a<-qplot(1:10, 1:10, geom="blank") + ggtitle('A') +
-  annotation_custom(g_hot_all, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
-  theme + labs
-
-img_hot_mussel <- readPNG(paste0(inpfigdir,"Figure_3_mussel.png"),native=T,info=T)
-g_hot_mussel <- rasterGrob(img_hot_mussel, interpolate=TRUE)
-
-b<-qplot(1:10, 1:10, geom="blank") + ggtitle('B') +
-  annotation_custom(g_hot_mussel, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
-  theme + labs
-
-img_hot_finfish <- readPNG(paste0(inpfigdir,"Figure_3_finfish.png"),native=T,info=T)
-g_hot_finfish <- rasterGrob(img_hot_finfish, interpolate=TRUE,just='center')
-
-c<-qplot(1:10, 1:10, geom="blank") + ggtitle('C') +
-  annotation_custom(g_hot_finfish , xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
-  theme + labs
-
-img_hot_kelp <- readPNG(paste0(inpfigdir,"Figure_3_kelp.png"),native=T,info=T)
-g_hot_kelp <- rasterGrob(img_hot_kelp, interpolate=TRUE, just='center')
-
-d<-qplot(1:10, 1:10, geom="blank") + ggtitle('D') +
-  annotation_custom(g_hot_kelp, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
-  theme + labs
-fig3 <- arrangeGrob(a,b,c,d,ncol=2,nrow=2,padding=unit(-.5,'line'))
-ggsave(paste0(outfigdir,'Fig 3.png'),fig3,width = width, height = height, units = units)
 # Figure 4
 EFPayoff_filter <- t(readMat('~/MSP_Model/Input/Data/Lester_et_al_MSPsolutions_Evals_v3/EFPayoff_a_X_wrt_DM_filter.mat')[[1]])
 Low.impact.solutions=setNames(data.frame(EFPayoff_filter),c('Mussel','Finfish','Kelp','Halibut','Viewshed','Benthic','Disease'))
@@ -588,8 +487,12 @@ p.map<-qplot(1:10, 1:10, geom="blank") + ggtitle('B') +
   theme(plot.margin = unit(c(.2,.2,.2,.2), units = "lines"),axis.text.x = element_blank(),axis.text.y = element_blank(),axis.ticks = element_blank(),
         axis.title=element_blank(),panel.background=element_rect(fill="white"),panel.grid=element_blank(),
         plot.title=element_text(hjust=0)) + theme
+        
 fig4 <- arrangeGrob(p.bar,p.map,ncol=2,nrow=1,padding=unit(-.5,'line'))
-ggsave(paste0(outfigdir,'Fig 4.png'),fig4,width=width * 2, height=height,units = units)
+figure_output(formatList, fig4, outfigdir, file_name='Fig 4', width, height, units)
+
+# ggsave(paste0(outfigdir,'Fig 4.png'),fig4,width=width * 2, height=height,units = units)
+
 # Figure 5
 EFPayoff_a_X_wrt_DM_SeedS1S2S3 <- setNames(data.frame(t(readMat(paste0(inpdatadir,'Lester_et_al_MSPsolutions_Evals_v3/EFPayoff_a_X_wrt_DM_SeedS1S2S3.mat'))[[1]])),
         c('Mussel','Finfish','Kelp','Halibut','Viewshed','Benthic','Disease')) %>% mutate(Seed = c('S1','S2','S3')) %>% gather(Sector,Value,-Seed)
