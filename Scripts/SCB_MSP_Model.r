@@ -502,7 +502,7 @@ EFPayoff_a_X_wrt_DM_SeedS1S2S3 <- setNames(data.frame(t(readMat(paste0(inpdatadi
 p.bar <- ggplot(EFPayoff_a_X_wrt_DM_SeedS1S2S3,aes(x=factor(Sector, levels = c('Mussel','Finfish','Kelp','Halibut','Viewshed','Benthic','Disease')),y=Value,fill=factor(Seed)))+
   geom_bar(stat="identity",position="dodge" )+
   ylab('Value [% of maximum]') +
-  scale_fill_discrete(name="Seed",labels=c('Prioritize Existing \nSectors','Prioritize Aquaculture \nSectors','Balance Existing \nSectors and Aquaculture')) +
+  scale_fill_discrete(name="Seed",labels=c('Seed 1','Seed 2', 'Seed 3', 'Seed 4', 'Seed 5')) +
   ggtitle('A') + scale_y_continuous(labels = scales::percent) +
   theme(axis.title.x=element_blank(),
         axis.ticks.x=element_blank(),
