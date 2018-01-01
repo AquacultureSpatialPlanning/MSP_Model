@@ -1,4 +1,4 @@
-# //TODO: Integrate call to matlab for running the dynamic halibut results
+x# //TODO: Integrate call to matlab for running the dynamic halibut results
 #//TODO: Make sure the figure scratch file is updated
 #//TODO: Get all of the directories finalized
 #//TODO: Integrate seeding scripts
@@ -720,7 +720,7 @@ S4B<-qplot(1:10, 1:10, geom="blank") + ggtitle('B') +
 S4 <- arrangeGrob(S4A,S4B,ncol=1,nrow=2,padding=unit(-.5,'line'))
 si_figure_output(formatList, S4, outfigdir, file_name='Fig S4', width=width, height=height,units = units)
 
-ggsave(paste0(outfigdir,'Fig S4.png'),S4,width=width, height=height,units=units)
+# ggsave(paste0(outfigdir,'Fig S4.png'),S4,width=width, height=height,units=units)
 # S5
 img_S5A <- readPNG(paste0(inpfigdir,'S6A.png'),native=T,info=T)
 g_S5A <- rasterGrob(img_S5A, interpolate=TRUE)
@@ -737,7 +737,9 @@ S5B<-qplot(1:10, 1:10, geom="blank") + ggtitle('B') +
   theme_2B + labs
 
 S5 <- arrangeGrob(S5A,S5B,ncol=1,nrow=2,padding=unit(-.5,'line'))
-ggsave(paste0(outfigdir,'Fig S5.png'),S5,width=width, height=height,units=units)
+# ggsave(paste0(outfigdir,'Fig S5.png'),S5,width=width, height=height,units=units)
+si_figure_output(formatList, S5, outfigdir, file_name='Fig S5', width=width, height=height,units = units)
+
 # S6
 img_S6A <- readPNG(paste0(inpfigdir,'S7A.png'),native=T,info=T)
 g_S6A <- rasterGrob(img_S6A, interpolate=TRUE)
@@ -800,7 +802,9 @@ S6D<-qplot(1:10, 1:10, geom="blank") + ggtitle('D') +
                 plot.margin = unit(c(-.25,-.25,.1,.1), units = "lines")) + labs
 # plot.margin = unit(c(0,0,0,0), units = "lines"),
 S6 <- arrangeGrob(S6A,S6B,S6C,S6D,ncol=2,nrow=2,padding=unit(-.5,'line'))
-ggsave(paste0(outfigdir,'Fig S6.png'),S6,width=width, height=height,units=units)
+si_figure_output(formatList, S6, outfigdir, file_name='Fig S6', width=width, height=height,units = units)
+
+# ggsave(paste0(outfigdir,'Fig S6.png'),S6,width=width, height=height,units=units)
 
 # S7
 U.C.Summary <- rbindlist(lapply(1:ncol(U.C.obj_i),FUN = function(x){
@@ -838,4 +842,5 @@ S7B <- ggplot() + geom_line(data = C.C.Summary, aes(x = Itor, y = Number, group 
               legend.position = c(.17, .80),
               panel.border = element_rect(colour = "black", fill=NA, size=1),legend.key = element_rect(color='white',fill='white'))
 S7 <- arrangeGrob(S7A, S7B, ncol = 1, nrow = 2)
+si_figure_output(formatList, S7, outfigdir, file_name='Fig S2', width=width, height=height,units = units)
 ggsave(paste0(outfigdir,'Fig S7.png'),S7,width=7, height=7,units=units)
