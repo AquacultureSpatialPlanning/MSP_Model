@@ -2,13 +2,13 @@ figure2 <- function(formatList){
     source('~/MSP_Model/Scripts/Tradeoff Cartoon.r')
     figure2B <- function(format){
         if(format == 'pdf'){
-            png(paste0(outfigdir,'/pdf/Fig 2B.pdf'),width=8, height=8,units=units,res = res)
+            png(paste0(outfigdir,'Main_MS/pdf/Fig 2B.pdf'),width=8, height=8,units=units,res = res)
         }
         if(format == 'png'){
-            png(paste0(outfigdir,'/png/Fig 2B.png'),width=8, height=8,units=units,res = res)
+            png(paste0(outfigdir,'Main_MS/png/Fig 2B.png'),width=8, height=8,units=units,res = res)
         }
         if(format == 'eps'){
-            postscript(paste0(outfigdir,'/eps/Fig 2B.eps'),width=8, height=8,paper = "special")
+            postscript(paste0(outfigdir,'Main_MS/eps/Fig 2B.eps'),width=8, height=8,paper = "special")
         }
         source('~/MSP_Model/Scripts/Tradeoff Cartoon.r')
         dev.off()
@@ -56,13 +56,13 @@ figure2 <- function(formatList){
         #   MM_test.df %>% filter(Set == 'C') %>% sample_n(size = 500))
         print(formatList[format])
         if(formatList[format] == 'pdf'){
-            png(paste0(outfigdir,'/pdf/Fig 2.pdf'),width=8, height=6.4,units=units,res = res)
+            png(paste0(outfigdir,'Main_MS/pdf/Fig 2.pdf'),width=8, height=6.4,units=units,res = res)
         }
         if(formatList[format] == 'png'){
-            png(paste0(outfigdir,'/png/Fig 2.png'),width=8, height=6.4,units=units,res = res)
+            png(paste0(outfigdir,'Main_MS/png/Fig 2.png'),width=8, height=6.4,units=units,res = res)
         }
         if(formatList[format] == 'eps'){
-            postscript(paste0(outfigdir,'/eps/Fig 2.eps'),width=8, height=6.4,paper = "special")
+            postscript(paste0(outfigdir,'Main_MS/eps/Fig 2.eps'),width=8, height=6.4,paper = "special")
         }
         pairs2(100*Master.matrix.max,lower.panel=panel.EF,
                upper.panel=NULL,col=color.vector,cex=0.8,xlim=c(0,100),

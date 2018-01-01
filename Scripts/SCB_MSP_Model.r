@@ -1,4 +1,4 @@
-x# //TODO: Integrate call to matlab for running the dynamic halibut results
+# //TODO: Integrate call to matlab for running the dynamic halibut results
 #//TODO: Make sure the figure scratch file is updated
 #//TODO: Get all of the directories finalized
 #//TODO: Integrate seeding scripts
@@ -497,7 +497,6 @@ figure_output(formatList, fig4, outfigdir, file_name='Fig 4', width=width * 2, h
 # ggsave(paste0(outfigdir,'Fig 4.png'),fig4,width=width * 2, height=height,units = units)
 
 # Figure 5
-print('foo')
 EFPayoff_a_X_wrt_DM_SeedS1S2S3 <- setNames(data.frame(t(readMat(paste0(inpdatadir,'EFPayoff_a_X_wrt_DM_Seed_bc_set.mat'))[[1]])),
         c('Mussel','Finfish','Kelp','Halibut','Viewshed','Benthic','Disease')) %>% mutate(Seed = c('S1','S2','S3','S4','S5')) %>% gather(Sector,Value,-Seed)
 p.bar <- ggplot(EFPayoff_a_X_wrt_DM_SeedS1S2S3,aes(x=factor(Sector, levels = c('Mussel','Finfish','Kelp','Halibut','Viewshed','Benthic','Disease')),y=Value,fill=factor(Seed)))+
@@ -842,5 +841,5 @@ S7B <- ggplot() + geom_line(data = C.C.Summary, aes(x = Itor, y = Number, group 
               legend.position = c(.17, .80),
               panel.border = element_rect(colour = "black", fill=NA, size=1),legend.key = element_rect(color='white',fill='white'))
 S7 <- arrangeGrob(S7A, S7B, ncol = 1, nrow = 2)
-si_figure_output(formatList, S7, outfigdir, file_name='Fig S2', width=width, height=height,units = units)
-ggsave(paste0(outfigdir,'Fig S7.png'),S7,width=7, height=7,units=units)
+si_figure_output(formatList, S7, outfigdir, file_name='Fig S7', width=width, height=height,units = units)
+# ggsave(paste0(outfigdir,'Fig S7.png'),S7,width=7, height=7,units=units)
