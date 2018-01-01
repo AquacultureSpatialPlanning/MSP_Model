@@ -18,3 +18,8 @@ Windows Instrucions
 1.) Follow these instructions to download R for windows https://cran.r-project.org/bin/windows/base/
 2.) Launch R from the command line or in RStudio
 3.) Run the command source('C:/MSP_Model/file_dir_params.r') (C:/ could be any drive as long as the folder MSP_Model is in the root directory)
+
+Note: 
+To run the code that produces the filter and seed plans:
+-Open Matlab
+-Open and run the file 'Filter_Seed_v6_BrayCurtis_publish_v1.m'
