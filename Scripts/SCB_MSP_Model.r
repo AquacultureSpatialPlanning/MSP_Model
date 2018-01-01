@@ -125,7 +125,7 @@ Raw_Impacts <- data.frame(Mussel = M.V, Finfish = F.V, Kelp = K.V, Halibut = H.V
 writeMat(paste0(inpdatadir,'Raw_Impacts.mat'),Raw_Impacts = Raw_Impacts)
 writeMat(paste0(inpdatadir,'Raw_Impacts_FID.mat'),
       Raw_Impacts = select(mutate(Raw_Impacts,FID = fulldomain[Aqua.Full.Domain.Logical]),FID,Mussel,Finfish,Kelp,Halibut,Viewshed_Mussel_Kelp,Viewshed_Finfish,Benthic_Impacts,Disease_Risk))
-writeMat(paste0(inpdatadir,'Lester_et_al_MSPsolutions_Evals_v3/Raw_Impacts_FID.mat'),
+writeMat(paste0(inpdatadir,'Raw_Impacts_FID.mat'),
       Raw_Impacts = select(mutate(Raw_Impacts,FID = fulldomain[Aqua.Full.Domain.Logical]),FID,Mussel,Finfish,Kelp,Halibut,Viewshed_Mussel_Kelp,Viewshed_Finfish,Benthic_Impacts,Disease_Risk))
 ## Tradeoff Model
 # Define parameters for the model
@@ -329,7 +329,7 @@ if(readline('Run Conventional Halibut For Conventional Models? ') == 'Y'){
 U.C.obj_i <- read.csv(file.path(paste0(inpdatadir,'U_C_obj_i.csv')),stringsAsFactors = FALSE) #%>% select(-X)
 C.C.obj_i <- read.csv(file.path(paste0(inpdatadir,'C_C_obj_i.csv')),stringsAsFactors = FALSE) #%>% select(-X)
 true_sector_names <- c('Mussel','Finfish','Kelp','Halibut','Viewshed','Benthic','Disease')
-Static.values.data <- setNames(data.frame(sapply(readMat('~/MSP_Model/Input/Data/Lester_et_al_MSPsolutions_Evals_v3/EFPayoff_a_X_wrt_DM.mat'),FUN = t)),true_sector_names)
+Static.values.data <- setNames(data.frame(sapply(readMat('~/MSP_Model/Input/Data/EFPayoff_a_X_wrt_DM.mat'),FUN = t)),true_sector_names)
 Unconstrained_data <- setNames(data.frame(sapply(readMat('~/MSP_Model/Output/Data/EFPayoff_a_X_wrt_DM_UC.mat'),FUN = function(x){t(ifelse(is.na(x),0,x))})) %>%
   select(EFPayoff.a.M.wrt.DM,EFPayoff.a.F.wrt.DM,EFPayoff.a.K.wrt.DM,EFPayoff.a.H.wrt.DM,EFPayoff.a.V.wrt.DM,EFPayoff.a.B.wrt.DM,EFPayoff.a.D.wrt.DM),true_sector_names)
 Constrained_data <- setNames(data.frame(sapply(readMat('~/MSP_Model/Output/Data/EFPayoff_a_X_wrt_DM_CC.mat'),FUN = function(x){t(ifelse(is.na(x),0,x))})) %>%
@@ -346,7 +346,7 @@ color.vector.max=c(rep('coral',length.out=nrow(Static.values.data)),rep('purple'
 
 # Static.values.data %>% select(Finfish,Disease) %>% filter(Disease > .99) %>% arrange(desc(Finfish)) %>% distinct()
 
-seeds <- setNames(data.frame(t(readMat('~/MSP_Model/Input/Data/Lester_et_al_MSPsolutions_Evals_v3/EFPayoff_a_X_wrt_DM_filter.mat')[[1]])),true_sector_names) %>%
+seeds <- setNames(data.frame(t(readMat('~/MSP_Model/Input/Data/EFPayoff_a_X_wrt_DM_filter.mat')[[1]])),true_sector_names) %>%
   select(Mussel, Finfish, Kelp) %>%
   mutate(Mussel = Mussel * sum(Raw_Impacts$Mussel)) %>%
   mutate(Finfish = Finfish * sum(Raw_Impacts$Finfish)) %>%
@@ -360,9 +360,43 @@ units='in'
 text.size<-12
 patch.size=1.5
 cols <- c("Mussel"="Blue","Finfish"="Salmon","Kelp"="Green","Halibut"="Burlywood","Viewshed"='Cyan',"Benthic"='Orange',"Disease"='Black')
+formatList <- c('png','eps','pdf') # Specify formats to plot
 
-# current.directory.scripts=outfigdir
-# setwd(current.directory.scripts)
+# Custom plotting functions (used throughout figure code)
+ png_load <- function(imageList, theme, labs, subtitleList = NULL, barsObj = NULL){
+    images <- list()
+    if(is.null(subtitleList)){
+        subtitleList <- c('A','B','C','D')
+    }
+    for(image_itor in 1:length(imageList)){
+        img <- readPNG(paste0(inpfigdir,imageList[image_itor]),native=T,info=T)
+        g <- rasterGrob(img, interpolate=TRUE)
+        ggObj<-qplot(1:10, 1:10, geom="blank") +
+            annotation_custom(g, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf) +
+            ggtitle(subtitleList[image_itor]) +
+            theme + labs
+        images[[image_itor]] <- ggObj
+    }
+    return(images)
+}
+
+figure_output <- function(formatList, figure_object, outfigdir, file_name, width, height, units){
+    for(itor in 1:length(formatList)){
+        dir.create(paste0(outfigdir, 'Main_MS/'), showWarnings = FALSE)
+        folder <- paste0(outfigdir, 'Main_MS/', formatList[itor])
+        dir.create(folder, showWarnings = FALSE)
+        file_name_full <- file.path(folder, paste0(file_name, '.', formatList[itor]))
+        print(file_name_full)
+        ggsave(filename = file_name_full,
+            plot = figure_object,
+            width = width,
+            height = height,
+            units = units,
+            dpi = 1000)
+    }
+    graphics.off()
+}
+# Theme used throughout primary text unless otherwise specified.
 theme = theme(plot.margin = unit(c(.2,0,.2,1), units = "lines"),
                 axis.text = element_blank(),
                 axis.title = element_blank(),
@@ -373,144 +407,36 @@ theme = theme(plot.margin = unit(c(.2,0,.2,1), units = "lines"),
                 panel.grid=element_blank(),
                 plot.title=element_text(hjust=0))
 labs = labs(x = NULL, y = NULL)
+
 # Figure 1
-img <- readPNG(paste0(inpfigdir,"Fig1A Capture.png"),native=T,info=T)
-g <- rasterGrob(img, interpolate=TRUE)
-
-a<-qplot(1:10, 1:10, geom="blank") + annotation_custom(g, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf) + ggtitle('A') +
-  theme + labs
-
-img_mussel <- readPNG(paste0(inpfigdir,"MusselValueApril.png"),native=T,info=T)
-g_mussel <- rasterGrob(img_mussel, interpolate=TRUE)
-
-b <- qplot(1:10, 1:10, geom="blank") + ggtitle('B') + annotation_custom(g_mussel, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf) +
-  theme +
-  labs
-
-img_finfish <- readPNG(paste0(inpfigdir,"FishValueApril.png"),native=T,info=T)
-g_finfish <- rasterGrob(img_finfish, interpolate=TRUE,just='center')
-
-c<-qplot(1:10, 1:10, geom="blank") + ggtitle('C') + annotation_custom(g_finfish, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf) +
-  theme +
-  labs
-
-img_kelp <- readPNG(paste0(inpfigdir,"KelpValueApril.png"),native=T,info=T)
-g_kelp <- rasterGrob(img_kelp, interpolate=TRUE, just='center')
-
-d<-qplot(1:10, 1:10, geom="blank") + ggtitle('D') + annotation_custom(g_kelp, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf) +
-  theme +
-  labs
-
-fig1 <- arrangeGrob(a,b,c,d,ncol=2,nrow=2,padding = unit(-.5,'lines'))
-ggsave(paste0(outfigdir,'Fig 1.png'),fig1,width=width, height=height,units = units)
-# ggsave(paste0(outfigdir,'Fig 1.png'),fig1)
+imageList=c("Fig1A Capture.png",
+    "MusselValueApril.png",
+    "FishValueApril.png",
+    "KelpValueApril.png")
+fig1List = png_load(imageList,theme,labs)
+fig1 <- arrangeGrob(grobs = fig1List,
+    ncol=2,
+    nrow=2,
+    padding = unit(-.5,'lines'))
+figure_output(formatList, fig1, outfigdir, file_name='Fig 1', width, height, units)
 # Figure 2
-source('~/MSP_Model/Scripts/Tradeoff Cartoon.r')
-# p_cartoon <- Tradeoff.cartoon()
-png(paste0(outfigdir,'Fig 2B.png'),width=8, height=8,units=units,res = res)
-source('~/MSP_Model/Scripts/Tradeoff Cartoon.r')
-dev.off()
-png(paste0(outfigdir,'Fig 2.png'),width=8, height=6.4,units=units,res = res)
-panel.EF<-function (x, y, itor=0, epsilon=.001, bg = NA, pch = 20, cex = .01, ...)
-{
-  x.MSP=x[color.vector=='coral']
-  y.MSP=y[color.vector=='coral']
-
-  points(x.MSP,y.MSP, pch = 16, col = alpha("dodgerblue",1/75),cex = cex/2)
-  x.U=x[color.vector=='purple']
-  y.U=y[color.vector=='purple']
-  x.S=x[color.vector=='green']
-  y.S=y[color.vector=='green']
-  x.EF=NULL
-  y.EF=NULL
-  alpha.mat.tmp=seq(from=0,by=epsilon,to=1)
-  # MSP
-  for(itor in 1:length(alpha.mat.tmp)){
-    alpha.tmp=alpha.mat.tmp[itor]
-    A=(alpha.tmp*x.MSP)+((1-alpha.tmp)*y.MSP)
-    I=which(A==max(A))
-    x.EF[itor]=max(unique(x.MSP[I]))
-    I.tmp.x=which(x.MSP==max(unique(x.MSP[I])))
-    I.tmp.y=which(y.MSP[I.tmp.x]==max(unique(y.MSP[I.tmp.x])))
-    y.EF[itor]=unique(y.MSP[I.tmp.x[I.tmp.y]])}
-  x.EF.original=x.EF;y.EF.original=y.EF;
-  if(length(unique(x.EF.original))!=1&length(unique(x.EF.original))!=1){
-    EF.inter=approx(x.EF.original,y=y.EF.original,n=length(alpha.mat.tmp))
-    x.EF=EF.inter$x;y.EF=EF.inter$y;
-  }else{
-  }
-  lines(sort(x.EF),y.EF[order(x.EF)],col="midnightblue",lwd=6,lty=1)
-  lines(sort(x.U),y.U[order(x.U)],col = "mediumorchid1",lwd=2,lty=1)
-  lines(sort(x.S),y.S[order(x.S)],col = "coral1",lwd=2,lty=1)
-}
-#   pdf.options(width = 8, height = 6.4)
-source(file.path(paste0(scrpdir,'pairs2.R')))
-color.vector=color.vector.max
- # Color Vector For Seperating the MSP from Conventional Solutions
-# sample <- rbind(MM_test.df %>% filter(Set == 'MSP') %>% sample_n(size = 1000),
-#   MM_test.df %>% filter(Set == 'U') %>% sample_n(size = 500),
-#   MM_test.df %>% filter(Set == 'C') %>% sample_n(size = 500))
-pairs2(100*Master.matrix.max,lower.panel=panel.EF,
-       upper.panel=NULL,col=color.vector,cex=0.8,xlim=c(0,100),
-       ylim=c(0,100),pch=16,font.labels=3,cex.axis=1,las=1,xaxp=c(0,100,4),yaxp=c(0,100,2),
-       gap=1)
-# title(xlab='% of Maximum',line = 1)
-title(ylab='% of Maximum')
-par(xpd=T)
-l1<-legend(.33,1,
-           legend=c('7D Frontier','2D Frontier'),fill=c("dodgerblue","midnightblue"),
-           cex=.75,title=expression(bold('Marine Spatial Planning (MSP)')),
-           title.adj = 0, bty = 'n', adj = 0, text.width=.25)
-l2<-legend(x = l1$rect$left+.0020, y = with(l1$rect, top - h)-.005,
-           legend=c('Constrained','Unconstrained'),fill=c("coral1","mediumorchid1"),
-           cex=.75,title=expression(bold('Conventional Planning ')),
-           title.adj = 0, bty = 'n', adj = 0, text.width=.25)
-inset.figure.proportion = 1/3
-inset.figure.dims = c(rep(width*(inset.figure.proportion),ts = 2))
-# The subplot command has changed quite drastically, as a result the cartoon needs to be inserted manually
-try(subplot(Tradeoff.cartoon(),par = list(cex.main=2.5, cex = .45, lwd = 1)))
-par(oma=c(0,2,2,0))
-title('A', adj = 0, outer = T, cex = .75)
-title(xlab='% of Maximum',line = 3.5)
-dev.off()
+source('~/MSP_Model/Scripts/Fig2.r')
+figure2(formatList)
+# dev.off()
 # Figure 3
-# Hot spot set up
-# system2(matlab_root,
-#   args = c('-nodesktop','-noFigureWindows','-nosplash','-r',
-#   paste0("run\\(\\'",scrpdir,"Scratch_File.m\\'\\)")))
-# source(file.path(paste0(scrpdir,'Scratch_File.r')))
-# png(paste0(outfigdir,'Fig 3.png'),width=width, height=height,res=res,units=units)
-img_hot_all <- readPNG(paste0(inpfigdir,"Figure_3_ALL.png"),native=T,info=T)
-g_hot_all <- rasterGrob(img_hot_all, interpolate = TRUE)
+imageList=c("Figure_3_ALL.png",
+    "Figure_3_mussel.png",
+    "Figure_3_finfish.png",
+    "Figure_3_kelp.png")
+fig3List = png_load(imageList,theme,labs)
+fig3 <- arrangeGrob(grobs = fig3List,
+    ncol=2,
+    nrow=2,
+    padding = unit(-.5,'lines'))
+figure_output(formatList, fig3, outfigdir, file_name='Fig 3', width, height, units)
 
-a<-qplot(1:10, 1:10, geom="blank") + ggtitle('A') +
-  annotation_custom(g_hot_all, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
-  theme + labs
-
-img_hot_mussel <- readPNG(paste0(inpfigdir,"Figure_3_mussel.png"),native=T,info=T)
-g_hot_mussel <- rasterGrob(img_hot_mussel, interpolate=TRUE)
-
-b<-qplot(1:10, 1:10, geom="blank") + ggtitle('B') +
-  annotation_custom(g_hot_mussel, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
-  theme + labs
-
-img_hot_finfish <- readPNG(paste0(inpfigdir,"Figure_3_finfish.png"),native=T,info=T)
-g_hot_finfish <- rasterGrob(img_hot_finfish, interpolate=TRUE,just='center')
-
-c<-qplot(1:10, 1:10, geom="blank") + ggtitle('C') +
-  annotation_custom(g_hot_finfish , xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
-  theme + labs
-
-img_hot_kelp <- readPNG(paste0(inpfigdir,"Figure_3_kelp.png"),native=T,info=T)
-g_hot_kelp <- rasterGrob(img_hot_kelp, interpolate=TRUE, just='center')
-
-d<-qplot(1:10, 1:10, geom="blank") + ggtitle('D') +
-  annotation_custom(g_hot_kelp, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
-  theme + labs
-fig3 <- arrangeGrob(a,b,c,d,ncol=2,nrow=2,padding=unit(-.5,'line'))
-ggsave(paste0(outfigdir,'Fig 3.png'),fig3,width = width, height = height, units = units)
 # Figure 4
-EFPayoff_filter <- t(readMat('~/MSP_Model/Input/Data/Lester_et_al_MSPsolutions_Evals_v3/EFPayoff_a_X_wrt_DM_filter.mat')[[1]])
+EFPayoff_filter <- t(readMat('~/MSP_Model/Input/Data/EFPayoff_a_X_wrt_DM_filter.mat')[[1]])
 Low.impact.solutions=setNames(data.frame(EFPayoff_filter),c('Mussel','Finfish','Kelp','Halibut','Viewshed','Benthic','Disease'))
 LI.names=names(Low.impact.solutions)
 ID=seq(to=nrow(Low.impact.solutions),from=1,by=1)
@@ -564,15 +490,19 @@ p.map<-qplot(1:10, 1:10, geom="blank") + ggtitle('B') +
   theme(plot.margin = unit(c(.2,.2,.2,.2), units = "lines"),axis.text.x = element_blank(),axis.text.y = element_blank(),axis.ticks = element_blank(),
         axis.title=element_blank(),panel.background=element_rect(fill="white"),panel.grid=element_blank(),
         plot.title=element_text(hjust=0)) + theme
+
 fig4 <- arrangeGrob(p.bar,p.map,ncol=2,nrow=1,padding=unit(-.5,'line'))
-ggsave(paste0(outfigdir,'Fig 4.png'),fig4,width=width * 2, height=height,units = units)
+figure_output(formatList, fig4, outfigdir, file_name='Fig 4', width=width * 2, height=height,units = units)
+
+# ggsave(paste0(outfigdir,'Fig 4.png'),fig4,width=width * 2, height=height,units = units)
+
 # Figure 5
-EFPayoff_a_X_wrt_DM_SeedS1S2S3 <- setNames(data.frame(t(readMat(paste0(inpdatadir,'Lester_et_al_MSPsolutions_Evals_v3/EFPayoff_a_X_wrt_DM_SeedS1S2S3.mat'))[[1]])),
-        c('Mussel','Finfish','Kelp','Halibut','Viewshed','Benthic','Disease')) %>% mutate(Seed = c('S1','S2','S3')) %>% gather(Sector,Value,-Seed)
+EFPayoff_a_X_wrt_DM_SeedS1S2S3 <- setNames(data.frame(t(readMat(paste0(inpdatadir,'EFPayoff_a_X_wrt_DM_Seed_bc_set.mat'))[[1]])),
+        c('Mussel','Finfish','Kelp','Halibut','Viewshed','Benthic','Disease')) %>% mutate(Seed = c('S1','S2','S3','S4','S5')) %>% gather(Sector,Value,-Seed)
 p.bar <- ggplot(EFPayoff_a_X_wrt_DM_SeedS1S2S3,aes(x=factor(Sector, levels = c('Mussel','Finfish','Kelp','Halibut','Viewshed','Benthic','Disease')),y=Value,fill=factor(Seed)))+
   geom_bar(stat="identity",position="dodge" )+
   ylab('Value [% of maximum]') +
-  scale_fill_discrete(name="Seed",labels=c('Prioritize Existing \nSectors','Prioritize Aquaculture \nSectors','Balance Existing \nSectors and Aquaculture')) +
+  scale_fill_discrete(name="Seed",labels=c('Seed 1','Seed 2', 'Seed 3', 'Seed 4', 'Seed 5')) +
   ggtitle('A') + scale_y_continuous(labels = scales::percent) +
   theme(axis.title.x=element_blank(),
         axis.ticks.x=element_blank(),
@@ -585,42 +515,41 @@ p.bar <- ggplot(EFPayoff_a_X_wrt_DM_SeedS1S2S3,aes(x=factor(Sector, levels = c('
         plot.title=element_text(hjust=0),legend.position = 'bottom',
         legend.key.size = unit(1,"lines"),
         legend.key = element_rect(size = 3))
-S1 <- qplot(1:10, 1:10, geom="blank") + ggtitle('B') +
-      annotation_custom(rasterGrob(readPNG(paste0(inpfigdir,"Figure5_S1.png"),native=T,info=T),interpolate = TRUE), xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
-      theme + labs
-S2 <- qplot(1:10, 1:10, geom="blank") + ggtitle('C') +
-      annotation_custom(rasterGrob(readPNG(paste0(inpfigdir,"Figure5_S2.png"),native=T,info=T),interpolate = TRUE), xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
-      theme + labs
-S3 <- qplot(1:10, 1:10, geom="blank") + ggtitle('D') +
-      annotation_custom(rasterGrob(readPNG(paste0(inpfigdir,"Figure5_S3.png"),native=T,info=T),interpolate = TRUE), xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
-      theme + labs
-fig5 <- arrangeGrob(p.bar,S1,S2,S3,ncol=2,nrow=2,layout_matrix = rbind(c(1,2),c(3,4)),padding=unit(-1,'line'))
-ggsave(paste0(outfigdir,'Fig 5.png'),fig5,width=width*1.15, height=height*1.15,units = units)
+imageList <- c("Seed_Plan1.png","Seed_Plan3.png","Seed_Plan5.png")
+fig5List <- png_load(imageList,theme,labs,subtitleList=c('B','C','D'))
+# fig5list <- c(p.bar, fig5List)
+# print(fig5List)
+# fig5List[1] <- p.bar
+# fig5List <- c(p.bar, fig5List[[1]], fig5List[2], fig5List[3])
+fig5 <- arrangeGrob(p.bar, fig5List[[1]], fig5List[[2]], fig5List[[3]],ncol=2,nrow=2,layout_matrix = rbind(c(1,2),c(3,4)),padding=unit(-1,'line'))
+figure_output(formatList, fig5, outfigdir, file_name='Fig 5', width=width*1.15, height=height*1.15, units)
+# ggsave(paste0(outfigdir,'Fig 5.png'),fig5,width=width*1.15, height=height*1.15,units = units)
 # Figure 6
-source(paste0(scrpdir,'value.of.MSP.loop_interpol.R'))
-source(paste0(scrpdir,'value.of.MSP.fx_2_interpol.R'))
-source(paste0(scrpdir,'figure_5_code.R'))
-MSP.value.data=rbind(Mussel.value.tmp,Finfish.value.tmp,Kelp.value.tmp)
-MSP.value.data.points=rbind(Mussel.value.tmp.points,Finfish.value.tmp.points,Kelp.value.tmp.points)
-names(MSP.value.data)=c('Aquaculture.Value','Value.of.MSP','Group','Sector.Name','Sector.Type','Type.of.Conventional')
-names(MSP.value.data.points)=c('Aquaculture.Value','Value.of.MSP','Group','Sector.Name','Sector.Type','Type.of.Conventional')
-MSP.value.data$Sector.Name=factor(MSP.value.data$Sector.Name,levels = c('Mussel','Finfish','Kelp','Halibut','Viewshed','Benthic','Disease'))
-Value.of.MSP.grid.plot<-ggplot(data=MSP.value.data)+
-  geom_point(data=subset(MSP.value.data[as.integer(MSP.value.data$Group)!=as.integer(MSP.value.data$Sector.Name),]),
-             aes(x=Aquaculture.Value,y=Value.of.MSP,shape=Type.of.Conventional,color=Type.of.Conventional),size=1.25)+
-  facet_grid(Sector.Name~Group)+scale_y_continuous(labels = percent,limits=c(0,1),breaks=c(0,.5,1))+
-  scale_x_continuous(labels = percent,breaks=c(0,.5,1))+
-  geom_text(data=subset(MSP.value.data[as.integer(MSP.value.data$Group)==as.integer(MSP.value.data$Sector.Name),]),x=.5,y=.5,size=15,label='NA')+
-  geom_point(data=MSP.value.data.points,aes(x=Aquaculture.Value,y=Value.of.MSP,shape=Type.of.Conventional,color=Type.of.Conventional),size=1.2)+
-  xlab("Aquaculture Value")+ylab("Value of Marine Spatial Planning")+
-  scale_colour_manual(name = "Conventional Planning :",labels=c("Constrained","Unconstrained"),values=c("coral1","mediumorchid1"))+
-  scale_shape_manual(name = "Conventional Planning :",labels=c("Constrained","Unconstrained"),values=c(16,24))+
-  scale_fill_manual(name = "Conventional Planning :",labels=c("Constrained","Unconstrained"),values=c("coral1","mediumorchid1"))+
-  theme_bw(base_size = 15)+theme(panel.grid=element_blank(),legend.position="bottom")
+    source(paste0(scrpdir,'value.of.MSP.loop_interpol.R'))
+    source(paste0(scrpdir,'value.of.MSP.fx_2_interpol.R'))
+    source(paste0(scrpdir,'figure_5_code.R'))
+    MSP.value.data=rbind(Mussel.value.tmp,Finfish.value.tmp,Kelp.value.tmp)
+    MSP.value.data.points=rbind(Mussel.value.tmp.points,Finfish.value.tmp.points,Kelp.value.tmp.points)
+    names(MSP.value.data)=c('Aquaculture.Value','Value.of.MSP','Group','Sector.Name','Sector.Type','Type.of.Conventional')
+    names(MSP.value.data.points)=c('Aquaculture.Value','Value.of.MSP','Group','Sector.Name','Sector.Type','Type.of.Conventional')
+    MSP.value.data$Sector.Name=factor(MSP.value.data$Sector.Name,levels = c('Mussel','Finfish','Kelp','Halibut','Viewshed','Benthic','Disease'))
+    Value.of.MSP.grid.plot<-ggplot(data=MSP.value.data)+
+      geom_point(data=subset(MSP.value.data[as.integer(MSP.value.data$Group)!=as.integer(MSP.value.data$Sector.Name),]),
+                 aes(x=Aquaculture.Value,y=Value.of.MSP,shape=Type.of.Conventional,color=Type.of.Conventional),size=1.25)+
+      facet_grid(Sector.Name~Group)+scale_y_continuous(labels = percent,limits=c(0,1),breaks=c(0,.5,1))+
+      scale_x_continuous(labels = percent,breaks=c(0,.5,1))+
+      geom_text(data=subset(MSP.value.data[as.integer(MSP.value.data$Group)==as.integer(MSP.value.data$Sector.Name),]),x=.5,y=.5,size=15,label='NA')+
+      geom_point(data=MSP.value.data.points,aes(x=Aquaculture.Value,y=Value.of.MSP,shape=Type.of.Conventional,color=Type.of.Conventional),size=1.2)+
+      xlab("Aquaculture Value")+ylab("Value of Marine Spatial Planning")+
+      scale_colour_manual(name = "Conventional Planning :",labels=c("Constrained","Unconstrained"),values=c("coral1","mediumorchid1"))+
+      scale_shape_manual(name = "Conventional Planning :",labels=c("Constrained","Unconstrained"),values=c(16,24))+
+      scale_fill_manual(name = "Conventional Planning :",labels=c("Constrained","Unconstrained"),values=c("coral1","mediumorchid1"))+
+      theme_bw(base_size = 15)+theme(panel.grid=element_blank(),legend.position="bottom")
 
 fig6 <- Value.of.MSP.grid.plot+theme(axis.title=element_text(size=12),panel.spacing = unit(1, "lines"),
                              strip.background=element_rect(fill='white'),strip.text=element_text(size=10),axis.ticks.margin=unit(1,'lines'))
-ggsave(paste0(outfigdir,'Fig 6.png'),fig6,width=8, height=8,units=units)
+figure_output(formatList, fig6, outfigdir, file_name='Fig 6', width=8, height=8, units)
+# ggsave(paste0(outfigdir,'Fig 6.png'),fig6,width=8, height=8,units=units)
 ## Figure 1
 ## SI Figures
 # current.directory.code <- '~/Desktop/Code/SI Figures Code/'
@@ -697,6 +626,22 @@ theme_2B = theme(plot.margin = unit(c(-.25,.1,.1,.1), units = "lines"),
               plot.title=element_text(hjust =.27,vjust=0,margin=margin(0,0,0,0)))
 
 labs = labs(x = NULL, y = NULL)
+si_figure_output <- function(formatList, figure_object, outfigdir, file_name, width, height, units){
+    for(itor in 1:length(formatList)){
+        dir.create(paste0(outfigdir, 'SI/'), showWarnings = FALSE)
+        folder <- paste0(outfigdir, 'SI/', formatList[itor])
+        dir.create(folder, showWarnings = FALSE)
+        file_name_full <- file.path(folder, paste0(file_name, '.', formatList[itor]))
+        print(file_name_full)
+        ggsave(filename = file_name_full,
+            plot = figure_object,
+            width = width,
+            height = height,
+            units = units,
+            dpi = 1000)
+    }
+    graphics.off()
+}
 # Figure S1
 img_s1 <- readPNG(paste0(inpfigdir,'Fig S1.png'),native=T,info=T)
 g_s1 <- rasterGrob(img_s1, interpolate=TRUE)
@@ -704,7 +649,8 @@ g_s1 <- rasterGrob(img_s1, interpolate=TRUE)
 S1 <- qplot(1:10, 1:10, geom="blank") +
       annotation_custom(g_s1, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
       theme_3 + labs
-ggsave(paste0(outfigdir,'Fig S1.png'),S1,width=width, height=height,units = units)
+si_figure_output(formatList, S1, outfigdir, file_name='Fig S1', width=width, height=height,units = units)
+# ggsave(paste0(outfigdir,'Fig S1.png'),S1,width=width, height=height,units = units)
 # Figure S2
 img_S2A <- readPNG(paste0(inpfigdir,'S2A.png'),native=T,info=T)
 g_S2A <- rasterGrob(img_S2A, interpolate=TRUE)
@@ -728,7 +674,9 @@ S2C<-qplot(1:10, 1:10, geom="blank") + ggtitle('C') +
   theme_3C + labs #+ theme(plot.margin = unit(c(0,0,0,0),'lines'))
 
 S2 <- arrangeGrob(S2A,S2B,S2C,ncol=1,nrow=3,padding=unit(0,'line'))
-ggsave(paste0(outfigdir,'Fig S2.png'),S2, width = width, height=height,units=units)
+si_figure_output(formatList, S2, outfigdir, file_name='Fig S2', width=width, height=height,units = units)
+
+# ggsave(paste0(outfigdir,'Fig S2.png'),S2, width = width, height=height,units=units)
 # S3
 img_S3A <- readPNG(paste0(inpfigdir,'S3A.png'),native=T,info=T)
 g_S3A <- rasterGrob(img_S3A, interpolate=TRUE)
@@ -751,7 +699,8 @@ S3C<-qplot(1:10, 1:10, geom="blank") + ggtitle('C') +
   annotation_custom(g_S3C, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
   theme_3C + labs
 S3 <- arrangeGrob(S3A,S3B,S3C,ncol=1,nrow=3,padding=unit(0,'line'))
-ggsave(paste0(outfigdir,'Fig S3.png'),S3,width=width, height=height,units=units)
+si_figure_output(formatList, S3, outfigdir, file_name='Fig S3', width=width, height=height,units = units)
+# ggsave(paste0(outfigdir,'Fig S3.png'),S3,width=width, height=height,units=units)
 # S4
 img_S4A <- readPNG(paste0(inpfigdir,'S5A.png'),native=T,info=T)
 g_S4A <- rasterGrob(img_S4A, interpolate=TRUE)
@@ -768,7 +717,9 @@ S4B<-qplot(1:10, 1:10, geom="blank") + ggtitle('B') +
   theme_2B + labs
 
 S4 <- arrangeGrob(S4A,S4B,ncol=1,nrow=2,padding=unit(-.5,'line'))
-ggsave(paste0(outfigdir,'Fig S4.png'),S4,width=width, height=height,units=units)
+si_figure_output(formatList, S4, outfigdir, file_name='Fig S4', width=width, height=height,units = units)
+
+# ggsave(paste0(outfigdir,'Fig S4.png'),S4,width=width, height=height,units=units)
 # S5
 img_S5A <- readPNG(paste0(inpfigdir,'S6A.png'),native=T,info=T)
 g_S5A <- rasterGrob(img_S5A, interpolate=TRUE)
@@ -785,7 +736,9 @@ S5B<-qplot(1:10, 1:10, geom="blank") + ggtitle('B') +
   theme_2B + labs
 
 S5 <- arrangeGrob(S5A,S5B,ncol=1,nrow=2,padding=unit(-.5,'line'))
-ggsave(paste0(outfigdir,'Fig S5.png'),S5,width=width, height=height,units=units)
+# ggsave(paste0(outfigdir,'Fig S5.png'),S5,width=width, height=height,units=units)
+si_figure_output(formatList, S5, outfigdir, file_name='Fig S5', width=width, height=height,units = units)
+
 # S6
 img_S6A <- readPNG(paste0(inpfigdir,'S7A.png'),native=T,info=T)
 g_S6A <- rasterGrob(img_S6A, interpolate=TRUE)
@@ -848,7 +801,9 @@ S6D<-qplot(1:10, 1:10, geom="blank") + ggtitle('D') +
                 plot.margin = unit(c(-.25,-.25,.1,.1), units = "lines")) + labs
 # plot.margin = unit(c(0,0,0,0), units = "lines"),
 S6 <- arrangeGrob(S6A,S6B,S6C,S6D,ncol=2,nrow=2,padding=unit(-.5,'line'))
-ggsave(paste0(outfigdir,'Fig S6.png'),S6,width=width, height=height,units=units)
+si_figure_output(formatList, S6, outfigdir, file_name='Fig S6', width=width, height=height,units = units)
+
+# ggsave(paste0(outfigdir,'Fig S6.png'),S6,width=width, height=height,units=units)
 
 # S7
 U.C.Summary <- rbindlist(lapply(1:ncol(U.C.obj_i),FUN = function(x){
@@ -886,4 +841,5 @@ S7B <- ggplot() + geom_line(data = C.C.Summary, aes(x = Itor, y = Number, group 
               legend.position = c(.17, .80),
               panel.border = element_rect(colour = "black", fill=NA, size=1),legend.key = element_rect(color='white',fill='white'))
 S7 <- arrangeGrob(S7A, S7B, ncol = 1, nrow = 2)
-ggsave(paste0(outfigdir,'Fig S7.png'),S7,width=7, height=7,units=units)
+si_figure_output(formatList, S7, outfigdir, file_name='Fig S7', width=width, height=height,units = units)
+# ggsave(paste0(outfigdir,'Fig S7.png'),S7,width=7, height=7,units=units)
