@@ -59,7 +59,7 @@ Tradeoff.cartoon <- function(){
   # par(mar(c(1,4/5,4/5,2/5)))
   plot(sort(x.EF),y.EF[order(x.EF)],col="midnightblue",lwd=3.5,lty=1,xlab='Finfish [% maximum]',ylab='Viewshed [% maximum]',
        xlim=c(0,100),ylim=c(0,100),xaxp=c(0,100,4),yaxp=c(0,100,4),cex.axis=1.5,cex.lab=1.5)
-  title('B', adj = 0, cex = 10)
+  title('b', adj = 0, cex = 10)
   lines(sort(x.U),y.U[order(x.U)],col = "mediumorchid1",lwd=3.5,lty=1)
   lines(sort(x.S),y.S[order(x.S)],col = "coral1",lwd=3.5,lty=1)
 
