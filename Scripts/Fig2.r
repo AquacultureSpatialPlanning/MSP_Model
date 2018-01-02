@@ -86,7 +86,7 @@ figure2 <- function(formatList){
         # The next line is the now obsolete way of programmatically inserting the subplot into the tradeoff matrix.
         # try(subplot(Tradeoff.cartoon(),par = list(cex.main=2.5, cex = .45, lwd = 1)))
         par(oma=c(0,2,2,0))
-        title('A', adj = 0, outer = T, cex = .75)
+        title('a', adj = 0, outer = T, cex = .75)
         title(xlab='% of Maximum',line = 3.5)
         dev.off()
         graphics.off()
