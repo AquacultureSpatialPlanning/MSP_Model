@@ -366,7 +366,7 @@ formatList <- c('png','eps','pdf') # Specify formats to plot
  png_load <- function(imageList, theme, labs, subtitleList = NULL, barsObj = NULL){
     images <- list()
     if(is.null(subtitleList)){
-        subtitleList <- c('A','B','C','D')
+        subtitleList <- c('a','b','c','d')
     }
     for(image_itor in 1:length(imageList)){
         img <- readPNG(paste0(inpfigdir,imageList[image_itor]),native=T,info=T)
