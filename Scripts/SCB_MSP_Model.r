@@ -824,7 +824,7 @@ S7A <- ggplot() + geom_line(data = U.C.Summary, aes(x = Itor, y = Number, group 
               axis.title.x=element_text(size=text.size,color="black"),
               axis.text.x=element_text(size=text.size,color="black"),
               legend.text=element_text(size=text.size),plot.title=element_text(hjust=0),
-              legend.position = c(.17, .80),
+              legend.position = c(.17, .75),
               panel.border = element_rect(colour = "black", fill=NA, size=1),legend.key = element_rect(color='white',fill='white'))
 S7B <- ggplot() + geom_line(data = C.C.Summary, aes(x = Itor, y = Number, group = factor(Sector), color = factor(Sector))) +
         scale_fill_discrete(name="Seed",labels=c('Mussel','Finfish','Kelp')) +
@@ -838,7 +838,7 @@ S7B <- ggplot() + geom_line(data = C.C.Summary, aes(x = Itor, y = Number, group 
               axis.title.x=element_text(size=text.size,color="black"),
               axis.text.x=element_text(size=text.size,color="black"),
               legend.text=element_text(size=text.size),plot.title=element_text(hjust=0),
-              legend.position = c(.17, .80),
+              legend.position = c(.17, .75),
               panel.border = element_rect(colour = "black", fill=NA, size=1),legend.key = element_rect(color='white',fill='white'))
 S7 <- arrangeGrob(S7A, S7B, ncol = 1, nrow = 2)
 si_figure_output(formatList, S7, outfigdir, file_name='Fig S7', width=width, height=height,units = units)
