@@ -9,7 +9,7 @@ outdatadir <- file.path(paste0(this.dir,'/Output/Data/'))
 outfigdir <- file.path(paste0(this.dir,'/Output/Figures/'))
 
 source(file.path(paste0(home,'/R_Libraries.r')))
-choice <- ifelse(readline(prompt = 'Install? y/n ') == 'Y',TRUE,FALSE)
+choice <- ifelse(toupper(readline(prompt = 'Install? y/n ')) == 'Y',TRUE,FALSE)
 print(choice)
 R_Libraries(choice)
 # Set MATLAB Directories

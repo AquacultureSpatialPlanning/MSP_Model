@@ -468,7 +468,7 @@ Low.impact.solutions=data.frame(ID.LI,value.LI.tmp,Sector.LI)
 names(Low.impact.solutions)=c('ID','Value','Sector')
 Low.impact.solutions$Sector=factor(Low.impact.solutions$Sector, levels=c('Mussel','Finfish','Kelp','Halibut','Viewshed','Benthic','Disease'))
 p.bar<-ggplot(data = Low.impact.solutions,aes(x=ID,y=Value,fill=Sector,color=Sector))+
-  geom_bar(stat="identity")+facet_grid(.~Sector)+ggtitle('A')+
+  geom_bar(stat="identity")+facet_grid(.~Sector)+ggtitle('a')+
   ylab('Value [% of maximum]') +
   scale_y_continuous(labels = percent,limits=c(0,1))+
   scale_fill_manual(values=cols)+
@@ -485,7 +485,7 @@ p.bar<-ggplot(data = Low.impact.solutions,aes(x=ID,y=Value,fill=Sector,color=Sec
 img_case_study_percent <- readPNG(paste0(inpfigdir,'Figure4B.png'),native=T,info=T)
 g_case_study_percent <- rasterGrob(img_case_study_percent, interpolate=TRUE,just='center')
 
-p.map<-qplot(1:10, 1:10, geom="blank") + ggtitle('B') +
+p.map<-qplot(1:10, 1:10, geom="blank") + ggtitle('b') +
   annotation_custom(g_case_study_percent, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
   theme(plot.margin = unit(c(.2,.2,.2,.2), units = "lines"),axis.text.x = element_blank(),axis.text.y = element_blank(),axis.ticks = element_blank(),
         axis.title=element_blank(),panel.background=element_rect(fill="white"),panel.grid=element_blank(),
@@ -503,7 +503,7 @@ p.bar <- ggplot(EFPayoff_a_X_wrt_DM_SeedS1S2S3,aes(x=factor(Sector, levels = c('
   geom_bar(stat="identity",position="dodge" )+
   ylab('Value [% of maximum]') +
   scale_fill_discrete(name="Seed",labels=c('Seed 1','Seed 2', 'Seed 3', 'Seed 4', 'Seed 5')) +
-  ggtitle('A') + scale_y_continuous(labels = scales::percent) +
+  ggtitle('a') + scale_y_continuous(labels = scales::percent) +
   theme(axis.title.x=element_blank(),
         axis.ticks.x=element_blank(),
         panel.background=element_rect(color='white',fill='white'),
@@ -512,11 +512,11 @@ p.bar <- ggplot(EFPayoff_a_X_wrt_DM_SeedS1S2S3,aes(x=factor(Sector, levels = c('
         axis.text.x=element_text(size=text.size*.65,color="black"),axis.text.y=element_text(size=text.size*.65,color="black"),
         legend.title=element_blank(),
         legend.text=element_text(size=text.size * .45),
-        plot.title=element_text(hjust=0),legend.position = 'bottom',
+        plot.title=element_text(hjust=0),legend.position = c(.17, .80),
         legend.key.size = unit(1,"lines"),
         legend.key = element_rect(size = 3))
 imageList <- c("Seed_Plan1.png","Seed_Plan3.png","Seed_Plan5.png")
-fig5List <- png_load(imageList,theme,labs,subtitleList=c('B','C','D'))
+fig5List <- png_load(imageList,theme,labs,subtitleList=c('b','c','d'))
 # fig5list <- c(p.bar, fig5List)
 # print(fig5List)
 # fig5List[1] <- p.bar
@@ -652,24 +652,24 @@ S1 <- qplot(1:10, 1:10, geom="blank") +
 si_figure_output(formatList, S1, outfigdir, file_name='Fig S1', width=width, height=height,units = units)
 # ggsave(paste0(outfigdir,'Fig S1.png'),S1,width=width, height=height,units = units)
 # Figure S2
-img_S2A <- readPNG(paste0(inpfigdir,'S2A.png'),native=T,info=T)
+img_S2A <- readPNG(paste0(inpfigdir,'S2a.png'),native=T,info=T)
 g_S2A <- rasterGrob(img_S2A, interpolate=TRUE)
 
-S2A<-qplot(1:10, 1:10, geom="blank") + ggtitle('A') +
+S2A<-qplot(1:10, 1:10, geom="blank") + ggtitle('a') +
       annotation_custom(g_S2A, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
       theme_3A + labs #gin = unit(c(0,0,0,0),'lines'))
 
 img_S2B <- readPNG(paste0(inpfigdir,'S2B.png'),native=T,info=T)
 g_S2B <- rasterGrob(img_S2B, interpolate=TRUE)
 
-S2B<-qplot(1:10, 1:10, geom="blank") + ggtitle('B') +
+S2B<-qplot(1:10, 1:10, geom="blank") + ggtitle('b') +
       annotation_custom(g_S2B, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
       theme_3B + labs #+ theme(plot.margin = unit(c(0,0,0,0),'lines'))
 
 img_S2C <- readPNG(paste0(inpfigdir,'S2C.png'),native=T,info=T)
 g_S2C <- rasterGrob(img_S2C, interpolate=TRUE)
 
-S2C<-qplot(1:10, 1:10, geom="blank") + ggtitle('C') +
+S2C<-qplot(1:10, 1:10, geom="blank") + ggtitle('c') +
   annotation_custom(g_S2C, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
   theme_3C + labs #+ theme(plot.margin = unit(c(0,0,0,0),'lines'))
 
@@ -681,21 +681,21 @@ si_figure_output(formatList, S2, outfigdir, file_name='Fig S2', width=width, hei
 img_S3A <- readPNG(paste0(inpfigdir,'S3A.png'),native=T,info=T)
 g_S3A <- rasterGrob(img_S3A, interpolate=TRUE)
 
-S3A<-qplot(1:10, 1:10, geom="blank") + ggtitle('A') +
+S3A<-qplot(1:10, 1:10, geom="blank") + ggtitle('a') +
   annotation_custom(g_S3A, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
   theme_3A + labs #+ #theme(plot.margin = unit(c(1,0,-.15,1),'lines'))
 
 img_S3B <- readPNG(paste0(inpfigdir,'S3B.png'),native=T,info=T)
 g_S3B <- rasterGrob(img_S3B, interpolate=TRUE)
 
-S3B<-qplot(1:10, 1:10, geom="blank") + ggtitle('B') +
+S3B<-qplot(1:10, 1:10, geom="blank") + ggtitle('b') +
   annotation_custom(g_S3B, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
   theme_3B + labs
 
 img_S3C <- readPNG(paste0(inpfigdir,'S3C.png'),native=T,info=T)
 g_S3C <- rasterGrob(img_S3C, interpolate=TRUE)
 
-S3C<-qplot(1:10, 1:10, geom="blank") + ggtitle('C') +
+S3C<-qplot(1:10, 1:10, geom="blank") + ggtitle('c') +
   annotation_custom(g_S3C, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
   theme_3C + labs
 S3 <- arrangeGrob(S3A,S3B,S3C,ncol=1,nrow=3,padding=unit(0,'line'))
@@ -705,14 +705,14 @@ si_figure_output(formatList, S3, outfigdir, file_name='Fig S3', width=width, hei
 img_S4A <- readPNG(paste0(inpfigdir,'S5A.png'),native=T,info=T)
 g_S4A <- rasterGrob(img_S4A, interpolate=TRUE)
 
-S4A<-qplot(1:10, 1:10, geom="blank") + ggtitle('A') +
+S4A<-qplot(1:10, 1:10, geom="blank") + ggtitle('a') +
   annotation_custom(g_S4A, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
   theme_2A + labs #+ theme(plot.margin = unit(c(1,0,-.15,1),'lines'))
 
 img_S4B <- readPNG(paste0(inpfigdir,'S5B.png'),native=T,info=T)
 g_S4B <- rasterGrob(img_S4B, interpolate=TRUE)
 
-S4B<-qplot(1:10, 1:10, geom="blank") + ggtitle('B') +
+S4B<-qplot(1:10, 1:10, geom="blank") + ggtitle('b') +
   annotation_custom(g_S4B, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
   theme_2B + labs
 
@@ -724,14 +724,14 @@ si_figure_output(formatList, S4, outfigdir, file_name='Fig S4', width=width, hei
 img_S5A <- readPNG(paste0(inpfigdir,'S6A.png'),native=T,info=T)
 g_S5A <- rasterGrob(img_S5A, interpolate=TRUE)
 
-S5A<-qplot(1:10, 1:10, geom="blank") + ggtitle('A') +
+S5A<-qplot(1:10, 1:10, geom="blank") + ggtitle('a') +
   annotation_custom(g_S5A, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
   theme_2A + labs #+ theme(plot.margin = unit(c(1,0,-.15,1),'lines'))
 
 img_S5B <- readPNG(paste0(inpfigdir,'S6B.png'),native=T,info=T)
 g_S5B <- rasterGrob(img_S5B, interpolate=TRUE)
 
-S5B<-qplot(1:10, 1:10, geom="blank") + ggtitle('B') +
+S5B<-qplot(1:10, 1:10, geom="blank") + ggtitle('b') +
   annotation_custom(g_S5B, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
   theme_2B + labs
 
@@ -743,7 +743,7 @@ si_figure_output(formatList, S5, outfigdir, file_name='Fig S5', width=width, hei
 img_S6A <- readPNG(paste0(inpfigdir,'S7A.png'),native=T,info=T)
 g_S6A <- rasterGrob(img_S6A, interpolate=TRUE)
 
-S6A<-qplot(1:10, 1:10, geom="blank") + ggtitle('A') +
+S6A<-qplot(1:10, 1:10, geom="blank") + ggtitle('a') +
   annotation_custom(g_S6A, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
   theme(axis.text = element_blank(),
                 axis.title = element_blank(),
@@ -758,7 +758,7 @@ S6A<-qplot(1:10, 1:10, geom="blank") + ggtitle('A') +
 img_S6B <- readPNG(paste0(inpfigdir,'S7B.png'),native=T,info=T)
 g_S6B <- rasterGrob(img_S6B, interpolate=TRUE)
 
-S6B<-qplot(1:10, 1:10, geom="blank") + ggtitle('B') +
+S6B<-qplot(1:10, 1:10, geom="blank") + ggtitle('b') +
   annotation_custom(g_S6B, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
   theme(axis.text = element_blank(),
                 axis.title = element_blank(),
@@ -773,7 +773,7 @@ S6B<-qplot(1:10, 1:10, geom="blank") + ggtitle('B') +
 img_S6C <- readPNG(paste0(inpfigdir,'S7C.png'),native=T,info=T)
 g_S6C <- rasterGrob(img_S6C, interpolate=TRUE)
 
-S6C<-qplot(1:10, 1:10, geom="blank") + ggtitle('C') +
+S6C<-qplot(1:10, 1:10, geom="blank") + ggtitle('c') +
   annotation_custom(g_S6C, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
   theme(axis.text = element_blank(),
                 axis.title = element_blank(),
@@ -788,7 +788,7 @@ S6C<-qplot(1:10, 1:10, geom="blank") + ggtitle('C') +
 img_S6D <- readPNG(paste0(inpfigdir,'S7D.png'),native=T,info=T)
 g_S6D <- rasterGrob(img_S6D, interpolate=TRUE)
 
-S6D<-qplot(1:10, 1:10, geom="blank") + ggtitle('D') +
+S6D<-qplot(1:10, 1:10, geom="blank") + ggtitle('d') +
   annotation_custom(g_S6D, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)+
   theme(axis.text = element_blank(),
                 axis.title = element_blank(),
@@ -814,7 +814,7 @@ C.C.Summary <- rbindlist(lapply(1:ncol(C.C.obj_i),FUN = function(x){
                 })) %>% mutate(Itor = 1:ncol(U.C.obj_i)) %>% gather(Sector, Number, -Itor) %>% glimpse()
 S7A <- ggplot() + geom_line(data = U.C.Summary, aes(x = Itor, y = Number, group = factor(Sector), color = factor(Sector))) +
         scale_fill_discrete(name="Seed",labels=c('Mussel','Finfish','Kelp')) +
-        ggtitle('A') +
+        ggtitle('a') +
         xlab('Total Number of Sites Developed') +
         ylab('Number of Sites Developed') +
         theme(panel.background=element_rect(color='white',fill='white'),panel.spacing = unit(.75, "lines"),
@@ -828,7 +828,7 @@ S7A <- ggplot() + geom_line(data = U.C.Summary, aes(x = Itor, y = Number, group 
               panel.border = element_rect(colour = "black", fill=NA, size=1),legend.key = element_rect(color='white',fill='white'))
 S7B <- ggplot() + geom_line(data = C.C.Summary, aes(x = Itor, y = Number, group = factor(Sector), color = factor(Sector))) +
         scale_fill_discrete(name="Seed",labels=c('Mussel','Finfish','Kelp')) +
-        ggtitle('B') +
+        ggtitle('b') +
         xlab('Total Number of Sites Developed') +
         ylab('Number of Sites Developed') +
         theme(panel.background=element_rect(color='white',fill='white'),panel.spacing = unit(.75, "lines"),

@@ -13,6 +13,7 @@ figure2 <- function(formatList){
         source('~/MSP_Model/Scripts/Tradeoff Cartoon.r')
         dev.off()
     }
+    graphics.off()
     panel.EF<-function (x, y, itor=0, epsilon=.001, bg = NA, pch = 20, cex = .01, ...)
     {
       x.MSP=x[color.vector=='coral']
@@ -49,7 +50,7 @@ figure2 <- function(formatList){
         #   pdf.options(width = 8, height = 6.4)
 
         color.vector=color.vector.max
-        figure2B(formatList[format])
+        # figure2B(formatList[format])
          # Color Vector For Seperating the MSP from Conventional Solutions
         # sample <- rbind(MM_test.df %>% filter(Set == 'MSP') %>% sample_n(size = 1000),
         #   MM_test.df %>% filter(Set == 'U') %>% sample_n(size = 500),
@@ -84,11 +85,11 @@ figure2 <- function(formatList){
         # WARNING!: The subplot command has changed quite drastically in recent updates to R,
         # as a result the cartoon needs to be inserted manually.
         # The next line is the now obsolete way of programmatically inserting the subplot into the tradeoff matrix.
-        # try(subplot(Tradeoff.cartoon(),par = list(cex.main=2.5, cex = .45, lwd = 1)))
+        # subplot(source('~/MSP_Model/Script/Tradeoff Cartoon.r'), x='topright', size = inset.figure.dims, par = c(cex.main=2.5, cex = .45, lwd = 1))
         par(oma=c(0,2,2,0))
         title('a', adj = 0, outer = T, cex = .75)
         title(xlab='% of Maximum',line = 3.5)
         dev.off()
-        graphics.off()
+        # graphics.off()
     }
 }
